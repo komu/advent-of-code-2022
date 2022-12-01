@@ -9,7 +9,9 @@ pub fn part_two(input: &str) -> Option<u32> {
 }
 
 fn parse_elf_totals(input: &str) -> impl Iterator<Item = u32> + '_ {
-    input.split("\n\n").map(|part|part.lines().map(|s| s.parse::<u32>().unwrap()).sum())
+    input
+        .split("\n\n")
+        .map(|part| part.lines().map(|s| s.parse::<u32>().unwrap()).sum())
 }
 
 fn main() {
