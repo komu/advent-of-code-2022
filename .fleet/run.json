@@ -12,6 +12,11 @@
         },
         {
             "type": "cargo",
+            "name": "cargo fmt",
+            "cargoArgs": ["fmt"],
+        },
+        {
+            "type": "cargo",
             "name": "clippy",
             "cargoArgs": ["clippy"],
             "executableArgs": ["-D", "warnings"],
