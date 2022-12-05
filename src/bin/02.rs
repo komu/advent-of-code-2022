@@ -1,31 +1,29 @@
 pub fn part_one(input: &str) -> Option<u32> {
-    let rounds = input.lines().map(|s| s.split(' ').collect::<Vec<_>>());
+    let result = input
+        .lines()
+        .map(|s| s.split_once(' ').unwrap())
+        .map(|r| {
+            let op = Shape::from_code(r.0);
+            let me = Shape::from_code(r.1);
 
-    Some(
-        rounds
-            .map(|r| {
-                let op = Shape::from_code(r[0]);
-                let me = Shape::from_code(r[1]);
-
-                me.score() + me.result(op).score()
-            })
-            .sum(),
-    )
+            me.score() + me.result(op).score()
+        })
+        .sum();
+    Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let rounds = input.lines().map(|s| s.split(' ').collect::<Vec<_>>());
+    let result = input
+        .lines()
+        .map(|s| s.split_once(' ').unwrap())
+        .map(|r| {
+            let op = Shape::from_code(r.0);
+            let result = Result::from_code(r.1);
 
-    Some(
-        rounds
-            .map(|r| {
-                let op = Shape::from_code(r[0]);
-                let result = Result::from_code(r[1]);
-
-                op.shape_for_result(result).score() + result.score()
-            })
-            .sum(),
-    )
+            op.shape_for_result(result).score() + result.score()
+        })
+        .sum();
+    Some(result)
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -57,10 +55,17 @@ impl Shape {
     }
 
     fn shape_for_result(self, result: Result) -> Self {
-        *[Self::Rock, Self::Paper, Self::Scissors]
-            .iter()
-            .find(|s| s.result(self) == result)
-            .unwrap()
+        match (self, result) {
+            (Shape::Rock, Result::Lose) => Shape::Scissors,
+            (Shape::Rock, Result::Draw) => Shape::Rock,
+            (Shape::Rock, Result::Win) => Shape::Paper,
+            (Shape::Paper, Result::Lose) => Shape::Rock,
+            (Shape::Paper, Result::Draw) => Shape::Paper,
+            (Shape::Paper, Result::Win) => Shape::Scissors,
+            (Shape::Scissors, Result::Lose) => Shape::Paper,
+            (Shape::Scissors, Result::Draw) => Shape::Scissors,
+            (Shape::Scissors, Result::Win) => Shape::Rock,
+        }
     }
 
     fn result(self, against: Shape) -> Result {
