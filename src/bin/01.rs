@@ -1,3 +1,5 @@
+use std::cmp::Reverse;
+
 use itertools::Itertools;
 
 pub fn part_one(input: &str) -> Option<u32> {
@@ -5,7 +7,13 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    Some(parse_elf_totals(input).sorted().rev().take(3).sum::<u32>())
+    Some(
+        parse_elf_totals(input)
+            .map(Reverse)
+            .k_smallest(3)
+            .map(|r| r.0)
+            .sum::<u32>(),
+    )
 }
 
 fn parse_elf_totals(input: &str) -> impl Iterator<Item = u32> + '_ {
