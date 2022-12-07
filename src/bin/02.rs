@@ -26,14 +26,14 @@ pub fn part_two(input: &str) -> Option<u32> {
     Some(result)
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy)]
 enum Shape {
     Rock,
     Paper,
     Scissors,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy)]
 enum Result {
     Lose,
     Draw,
@@ -55,34 +55,20 @@ impl Shape {
     }
 
     fn shape_for_result(self, result: Result) -> Self {
-        match (self, result) {
-            (Shape::Rock, Result::Lose) => Shape::Scissors,
-            (Shape::Rock, Result::Draw) => Shape::Rock,
-            (Shape::Rock, Result::Win) => Shape::Paper,
-            (Shape::Paper, Result::Lose) => Shape::Rock,
-            (Shape::Paper, Result::Draw) => Shape::Paper,
-            (Shape::Paper, Result::Win) => Shape::Scissors,
-            (Shape::Scissors, Result::Lose) => Shape::Paper,
-            (Shape::Scissors, Result::Draw) => Shape::Scissors,
-            (Shape::Scissors, Result::Win) => Shape::Rock,
+        match ((self as u8) + (result as u8) + 2) % 3 {
+            0 => Self::Rock,
+            1 => Self::Paper,
+            2 => Self::Scissors,
+            _ => panic!(),
         }
     }
 
     fn result(self, against: Shape) -> Result {
-        if self == against {
-            return Result::Draw;
-        }
-
-        let wins = match self {
-            Self::Rock => against == Self::Scissors,
-            Self::Paper => against == Self::Rock,
-            Self::Scissors => against == Self::Paper,
-        };
-
-        if wins {
-            Result::Win
-        } else {
-            Result::Lose
+        match (((self as u8) + 3) - (against as u8)) % 3 {
+            0 => Result::Draw,
+            1 => Result::Win,
+            2 => Result::Lose,
+            _ => panic!(),
         }
     }
 }

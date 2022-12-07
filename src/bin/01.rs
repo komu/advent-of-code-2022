@@ -21,9 +21,15 @@ fn parse_elf_totals(input: &str) -> impl Iterator<Item = u32> + '_ {
         let mut sum = 0;
         loop {
             match it.next() {
-                None => if sum > 0 { return Some(sum) } else { return None }
+                None => {
+                    if sum > 0 {
+                        return Some(sum);
+                    } else {
+                        return None;
+                    }
+                }
                 Some("") => return Some(sum),
-                Some(s) => sum += s.parse::<u32>().unwrap()
+                Some(s) => sum += s.parse::<u32>().unwrap(),
             }
         }
     })

@@ -14,10 +14,12 @@ pub fn part_one(input: &str) -> Option<u32> {
 pub fn part_two(input: &str) -> Option<u32> {
     Some(
         parse_lines::<Rucksack>(input)
-            .map(|r| r.items())
-            .chunks(3)
-            .into_iter()
-            .map(|g| intersection(g).to_item().priority())
+            .tuples()
+            .map(|(a, b, c)| {
+                intersect(a.items(), b.items(), c.items())
+                    .to_item()
+                    .priority()
+            })
             .sum::<u32>(),
     )
 }
@@ -44,11 +46,8 @@ impl FromStr for ItemSet {
     }
 }
 
-fn intersection<I>(vals: I) -> ItemSet
-where
-    I: IntoIterator<Item = ItemSet>,
-{
-    vals.into_iter().reduce(|a, b| a.intersect(b)).unwrap()
+fn intersect(a: ItemSet, b: ItemSet, c: ItemSet) -> ItemSet {
+    ItemSet(a.0 & b.0 & c.0)
 }
 
 impl ItemSet {
