@@ -17,9 +17,16 @@ pub fn part_two(input: &str) -> Option<u32> {
 }
 
 fn parse_elf_totals(input: &str) -> impl Iterator<Item = u32> + '_ {
-    input
-        .split("\n\n")
-        .map(|part| part.lines().map(|s| s.parse::<u32>().unwrap()).sum())
+    input.lines().batching(|it| {
+        let mut sum = 0;
+        loop {
+            match it.next() {
+                None => if sum > 0 { return Some(sum) } else { return None }
+                Some("") => return Some(sum),
+                Some(s) => sum += s.parse::<u32>().unwrap()
+            }
+        }
+    })
 }
 
 fn main() {
