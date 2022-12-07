@@ -25,7 +25,7 @@ fn main() {
 struct RangePair(RangeInclusive<u32>, RangeInclusive<u32>);
 
 impl FromStr for RangePair {
-    type Err = String;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (r1, r2) = s.split_once(',').unwrap();

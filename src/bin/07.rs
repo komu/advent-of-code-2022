@@ -103,7 +103,7 @@ enum SessionLine {
 }
 
 impl FromStr for SessionLine {
-    type Err = String;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let bytes = s.as_bytes();

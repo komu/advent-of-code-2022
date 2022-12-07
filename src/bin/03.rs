@@ -33,16 +33,15 @@ struct ItemSet(u64);
 #[derive(Clone, Copy)]
 struct Rucksack(ItemSet, ItemSet);
 
-impl FromStr for ItemSet {
-    type Err = String;
+impl From<&str> for ItemSet {
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from(s: &str) -> Self {
         let mut bits: u64 = 0;
         for item in s.chars().map(Item::from) {
             bits |= 1 << item.priority();
         }
 
-        Ok(ItemSet(bits))
+        ItemSet(bits)
     }
 }
 
@@ -86,12 +85,13 @@ impl Rucksack {
 }
 
 impl FromStr for Rucksack {
-    type Err = String;
+
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let len = s.len() / 2;
-        let left = s[..len].parse::<ItemSet>()?;
-        let right = s[len..].parse::<ItemSet>()?;
+        let left = ItemSet::from(&s[..len]);
+        let right = ItemSet::from(&s[len..]);
 
         Ok(Rucksack(left, right))
     }

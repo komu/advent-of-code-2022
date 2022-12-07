@@ -61,7 +61,7 @@ impl Stacks {
 }
 
 impl FromStr for Stacks {
-    type Err = String;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut stacks: Vec<Vec<Crate>> = Vec::new();
@@ -104,7 +104,7 @@ struct Move {
 }
 
 impl FromStr for Move {
-    type Err = String;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let two_digit_count = s.len() == 19;
