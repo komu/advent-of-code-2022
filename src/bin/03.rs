@@ -34,7 +34,6 @@ struct ItemSet(u64);
 struct Rucksack(ItemSet, ItemSet);
 
 impl From<&str> for ItemSet {
-
     fn from(s: &str) -> Self {
         let mut bits: u64 = 0;
         for item in s.chars().map(Item::from) {
@@ -85,7 +84,6 @@ impl Rucksack {
 }
 
 impl FromStr for Rucksack {
-
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

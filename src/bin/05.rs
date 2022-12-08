@@ -58,7 +58,10 @@ struct Stacks {
 
 impl Stacks {
     fn top_str(&self) -> String {
-        self.stacks.iter().map(|s| s.last().unwrap().to_char()).join("")
+        self.stacks
+            .iter()
+            .map(|s| s.last().unwrap().to_char())
+            .join("")
     }
 
     fn move_multiple(&mut self, from: usize, to: usize, count: usize) {

@@ -26,9 +26,9 @@ fn solve(input: &str, count: usize) -> Option<usize> {
 fn calculate_forward_skip(bytes: &[u8]) -> usize {
     let mut i = bytes.len();
     while i != 1 {
-        let v = bytes[i-1];
-        if let Some(p) = bytes[0..i-1].iter().position(|x| *x == v) {
-            return p+1;
+        let v = bytes[i - 1];
+        if let Some(p) = bytes[0..i - 1].iter().position(|x| *x == v) {
+            return p + 1;
         }
 
         i -= 1;
