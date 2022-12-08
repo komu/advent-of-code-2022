@@ -40,7 +40,17 @@ fn main() {
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
-struct Crate(char);
+struct Crate(u8);
+
+impl Crate {
+    fn from_char(c: char) -> Crate {
+        Crate(c as u8)
+    }
+
+    fn to_char(self) -> char {
+        self.0 as char
+    }
+}
 
 struct Stacks {
     stacks: Vec<Vec<Crate>>,
@@ -48,7 +58,7 @@ struct Stacks {
 
 impl Stacks {
     fn top_str(&self) -> String {
-        self.stacks.iter().map(|s| s.last().unwrap().0).join("")
+        self.stacks.iter().map(|s| s.last().unwrap().to_char()).join("")
     }
 
     fn move_multiple(&mut self, from: usize, to: usize, count: usize) {
@@ -83,7 +93,7 @@ impl FromStr for Stacks {
                 }
 
                 if chars[j] != ' ' {
-                    stacks[i].push(Crate(chars[j]));
+                    stacks[i].push(Crate::from_char(chars[j]));
                 }
             }
         }
