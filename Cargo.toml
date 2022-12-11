@@ -14,6 +14,7 @@ itertools = "0.10.5"
 anyhow = "1.0.66"
 rayon = "1.6.0"
 bitvec = "1.0.1"
+num = "0.4.0"
 
 [profile.release]
 lto = true
