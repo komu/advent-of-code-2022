@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use aoc::helpers::mut_refs3;
 use itertools::Itertools;
 use num::integer::lcm;
 use std::{cmp::Reverse, str::FromStr};
@@ -10,41 +11,27 @@ pub fn part_one(input: &str) -> Option<usize> {
         .collect();
     let mut items: Vec<Vec<WorryLevel>> = monkeys.iter().map(|m| m.items.clone()).collect();
     let mut inspections: Vec<usize> = vec![0; monkeys.len()];
-    let mut result = Vec::with_capacity(20);
 
     for _ in 0..20 {
-        for i in 0..monkeys.len() {
-            let monkey = &monkeys[i];
-            let monkey_items = &mut items[i];
+        for (i, monkey) in monkeys.iter().enumerate() {
+            let (monkey_items, true_items, false_items) =
+                mut_refs3(&mut items, i, monkey.if_true, monkey.if_false);
 
             inspections[i] += monkey_items.len();
 
-            result.clear();
-            for item in monkey_items.iter() {
-                let new_item = monkey.operation.evaluate(*item) / 3;
-                let new_monkey = if new_item % monkey.divisible_by == 0 {
-                    monkey.if_true
+            for &item in monkey_items.iter() {
+                let new_item = monkey.operation.eval_div3(item);
+                if new_item % monkey.divisible_by == 0 {
+                    true_items.push(new_item);
                 } else {
-                    monkey.if_false
+                    false_items.push(new_item);
                 };
-                result.push((new_monkey, new_item));
             }
             monkey_items.clear();
-
-            for (monkey, item) in &result {
-                items[*monkey].push(*item);
-            }
         }
     }
 
-    let v: Vec<_> = inspections
-        .iter()
-        .map(Reverse)
-        .k_smallest(2)
-        .map(|r| r.0)
-        .collect();
-
-    Some(v[0] * v[1])
+    Some(monkey_business(&inspections))
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
@@ -54,49 +41,41 @@ pub fn part_two(input: &str) -> Option<usize> {
         .collect();
     let mut items: Vec<Vec<WorryLevel>> = monkeys.iter().map(|m| m.items.clone()).collect();
     let mut inspections: Vec<usize> = vec![0; monkeys.len()];
-    let mut result = Vec::with_capacity(20);
     let modulo = monkeys.iter().map(|m| m.divisible_by).reduce(lcm).unwrap();
 
     for _ in 0..10000 {
-        for i in 0..monkeys.len() {
-            let monkey = &monkeys[i];
-            let monkey_items = &mut items[i];
+        for (i, monkey) in monkeys.iter().enumerate() {
+            let (monkey_items, true_items, false_items) =
+                mut_refs3(&mut items, i, monkey.if_true, monkey.if_false);
+
             inspections[i] += monkey_items.len();
 
-            result.clear();
-            for item in monkey_items.iter() {
-                let new_item = monkey.operation.evaluate(*item) % modulo;
-                let new_monkey = if new_item % monkey.divisible_by == 0 {
-                    monkey.if_true
+            for &item in monkey_items.iter() {
+                let new_item = monkey.operation.eval_mod(item, modulo);
+                if new_item % monkey.divisible_by == 0 {
+                    true_items.push(new_item);
                 } else {
-                    monkey.if_false
-                };
-                result.push((new_monkey, new_item));
+                    false_items.push(new_item);
+                }
             }
             monkey_items.clear();
-
-            for (monkey, item) in &result {
-                items[*monkey].push(*item);
-            }
         }
     }
 
+    Some(monkey_business(&inspections))
+}
+
+fn monkey_business(inspections: &[usize]) -> usize {
     let v: Vec<_> = inspections
         .iter()
         .map(Reverse)
         .k_smallest(2)
         .map(|r| r.0)
         .collect();
-    Some(v[0] * v[1])
+    v[0] * v[1]
 }
 
-fn main() {
-    let input = &aoc::read_file("inputs", 11);
-    aoc::solve!(1, part_one, input);
-    aoc::solve!(2, part_two, input);
-}
-
-type WorryLevel = u64;
+type WorryLevel = u32;
 type MonkeyId = usize;
 
 #[derive(Debug)]
@@ -116,11 +95,21 @@ enum Op {
 }
 
 impl Op {
-    fn evaluate(&self, x: WorryLevel) -> WorryLevel {
-        match self {
+    fn eval_div3(&self, x: WorryLevel) -> WorryLevel {
+        let v = match self {
             Op::Multiply(y) => x * y,
             Op::Add(y) => x + y,
             Op::Square => x * x,
+        };
+        v / 3
+    }
+
+    fn eval_mod(&self, x: WorryLevel, modulo: WorryLevel) -> WorryLevel {
+        match self {
+            Op::Multiply(y) => (x * y) % modulo,
+            Op::Add(y) => (x + y) % modulo,
+            // The square might overflow u32 before taking modulo, so we need to widen it temporarily
+            Op::Square => (((x as u64) * (x as u64)) % (modulo as u64)) as WorryLevel,
         }
     }
 }
@@ -188,6 +177,12 @@ impl FromStr for Op {
             Err(anyhow!("Invalid op '{}'", s))
         }
     }
+}
+
+fn main() {
+    let input = &aoc::read_file("inputs", 11);
+    aoc::solve!(1, part_one, input);
+    aoc::solve!(2, part_two, input);
 }
 
 #[cfg(test)]
