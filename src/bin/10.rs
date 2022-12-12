@@ -36,7 +36,7 @@ pub fn part_two(input: &str) -> Option<String> {
 
 fn run<F>(input: &str, mut f: F)
 where
-    F: FnMut(i32, i32) -> (),
+    F: FnMut(i32, i32),
 {
     let ops = parse_lines::<OpCode>(input);
 
