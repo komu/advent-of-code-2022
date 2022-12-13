@@ -1,20 +1,14 @@
-use std::{
-    cmp::Ordering,
-    iter::Peekable,
-    str::{Chars, FromStr},
-};
-
-use anyhow::{anyhow, Context};
+use std::{cmp::Ordering, iter::Peekable, str::Bytes};
 
 pub fn part_one(input: &str) -> Option<usize> {
-    let pairs = input.trim().split("\n\n").map(|s| {
-        let (l1, l2) = s.split_once('\n').unwrap();
-        (l1.parse::<Value>().unwrap(), l2.parse::<Value>().unwrap())
-    });
-
-    let result = pairs
+    let result = input
+        .trim()
+        .split("\n\n")
         .enumerate()
-        .filter(|(_, (x, y))| x <= y)
+        .filter(|(_, s)| {
+            let (x, y) = s.split_once('\n').unwrap();
+            compare_values(&mut PacketParser::new(x), &mut PacketParser::new(y)) == Ordering::Less
+        })
         .map(|(i, _)| i + 1)
         .sum();
 
@@ -22,114 +16,110 @@ pub fn part_one(input: &str) -> Option<usize> {
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
-    let mut packets: Vec<_> = input
-        .trim()
-        .lines()
-        .filter(|s| !s.is_empty())
-        .map(|s| s.parse::<Value>().unwrap())
-        .collect();
+    let packets = input.trim().lines().filter(|s| !s.is_empty());
 
-    let divider1 = Value::List(vec![Value::List(vec![Value::Int(2)])]);
-    let divider2 = Value::List(vec![Value::List(vec![Value::Int(6)])]);
+    let mut divider1_index = 1;
+    let mut divider2_index = 2;
 
-    packets.push(divider1.clone());
-    packets.push(divider2.clone());
+    for packet in packets {
+        if compare_list_to_value(&mut PacketParser::new(packet), 3) == Ordering::Less {
+            divider1_index += 1;
+            divider2_index += 1;
+        } else if compare_list_to_value(&mut PacketParser::new(packet), 6) == Ordering::Less {
+            divider2_index += 1;
+        }
+    }
 
-    packets.sort();
-
-    let i1 = 1 + packets.iter().position(|x| *x == divider1).unwrap();
-    let i2 = 1 + packets.iter().position(|x| *x == divider2).unwrap();
-
-    Some(i1 * i2)
+    Some(divider1_index * divider2_index)
 }
 
-impl Ord for Value {
-    fn cmp(&self, other: &Self) -> Ordering {
-        match (self, other) {
-            (Value::Int(x), Value::Int(y)) => x.cmp(y),
-            (Value::List(x), Value::List(y)) => x.cmp(y),
-            (Value::Int(x), Value::List(y)) => [Value::Int(*x)].as_slice().cmp(y.as_slice()),
-            (Value::List(x), Value::Int(y)) => x.as_slice().cmp([Value::Int(*y)].as_slice()),
+struct PacketParser<'a> {
+    iter: Peekable<Bytes<'a>>,
+}
+
+impl<'a> PacketParser<'a> {
+    fn new(s: &'a str) -> Self {
+        PacketParser {
+            iter: s.bytes().peekable(),
         }
+    }
+
+    fn peek(&mut self) -> Option<u8> {
+        self.iter.peek().copied()
+    }
+
+    fn consume(&mut self, c: u8) {
+        assert_eq!(self.iter.next(), Some(c))
+    }
+
+    fn consume_if(&mut self, c: u8) -> bool {
+        self.iter.next_if_eq(&c).is_some()
+    }
+
+    fn read_number(&mut self) -> u8 {
+        let mut value = 0;
+
+        while let Some(c) = self.iter.next_if(|x| x.is_ascii_digit()) {
+            value *= 10;
+            value += c - b'0';
+        }
+
+        value
     }
 }
 
-impl PartialOrd for Value {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+fn compare_values(l: &mut PacketParser, r: &mut PacketParser) -> Ordering {
+    match (l.peek(), r.peek()) {
+        (None, None) => Ordering::Equal,
+        (None, Some(_)) => Ordering::Less,
+        (Some(_), None) => Ordering::Greater,
+        (Some(b'['), Some(b'[')) => compare_lists(l, r),
+        (Some(b'['), _) => compare_list_to_value(l, r.read_number()),
+        (_, Some(b'[')) => compare_list_to_value(r, l.read_number()).reverse(),
+        _ => l.read_number().cmp(&r.read_number()),
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-enum Value {
-    Int(u8),
-    List(Vec<Value>),
-}
+fn compare_lists(l: &mut PacketParser, r: &mut PacketParser) -> Ordering {
+    l.consume(b'[');
+    r.consume(b'[');
 
-impl FromStr for Value {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        fn parse_value(it: &mut Peekable<Chars>) -> Result<Value, anyhow::Error> {
-            match it.peek() {
-                Some(&'[') => parse_list(it),
-                Some(&c) if c.is_ascii_digit() => parse_scalar(it),
-                Some(&c) => Err(anyhow!("unexpected char '{}'", c)),
-                None => Err(anyhow!("unexpected end")),
-            }
-        }
-
-        fn parse_list(it: &mut Peekable<Chars>) -> Result<Value, anyhow::Error> {
-            expect(it, '[')?;
-
-            let mut result = Vec::new();
-
-            if it.peek() != Some(&']') {
-                result.push(parse_value(it)?);
-
-                while it.next_if_eq(&',').is_some() {
-                    result.push(parse_value(it)?);
-                }
-            }
-
-            expect(it, ']')?;
-            Ok(Value::List(result))
-        }
-
-        fn parse_scalar(it: &mut Peekable<Chars>) -> Result<Value, anyhow::Error> {
-            let Some(c) = it.next() else {
-                return Err(anyhow!("expected scalar, got end"));
-            };
-
-            if c.is_ascii_digit() {
-                let mut num = c as u8 - b'0';
-
-                while let Some(n) = it.next_if(|n| n.is_ascii_digit()) {
-                    num *= 10;
-                    num += n as u8 - b'0'
-                }
-
-                Ok(Value::Int(num))
+    loop {
+        let left_ends = l.consume_if(b']');
+        let right_ends = r.consume_if(b']');
+        if left_ends || right_ends {
+            if left_ends && right_ends {
+                return Ordering::Equal;
+            } else if left_ends {
+                return Ordering::Less;
             } else {
-                Err(anyhow!("expected scalar, got '{}'", c))
+                return Ordering::Greater;
             }
         }
 
-        fn expect(it: &mut Peekable<Chars>, expected: char) -> Result<(), anyhow::Error> {
-            match it.next() {
-                Some(c) if expected == c => Ok(()),
-                Some(c) => Err(anyhow!("expected '{}', got '{}'", expected, c)),
-                None => Err(anyhow!("expected '{}', got end", expected)),
-            }
+        let result = compare_values(l, r);
+        if result != Ordering::Equal {
+            return result;
         }
 
-        let mut it = s.chars().peekable();
-        let v = parse_value(&mut it).with_context(|| format!("while parsing line '{}'", s))?;
+        l.consume_if(b',');
+        r.consume_if(b',');
+    }
+}
 
-        if let Some(c) = it.next() {
-            Err(anyhow!("expected end, got '{}' on line '{}'", c, s))
+fn compare_list_to_value(list_it: &mut PacketParser, value: u8) -> Ordering {
+    while list_it.consume_if(b'[') {}
+
+    if list_it.consume_if(b']') {
+        Ordering::Less
+    } else {
+        let result = list_it.read_number().cmp(&value);
+        if result != Ordering::Equal {
+            result
+        } else if list_it.consume_if(b']') {
+            Ordering::Equal
         } else {
-            Ok(v)
+            Ordering::Greater
         }
     }
 }

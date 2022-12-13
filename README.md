@@ -10,7 +10,7 @@ a total budget of 100 milliseconds.
 
 | Day                                            | Solution               | Part 1   | Part 2   | Notes |
 | :--------------------------------------------: | :--------------------- | -------: | -------: | :---- |
-| [Day 1](https://adventofcode.com/2022/day/1)   | [01.rs](src/bin/01.rs) | 77.66µs |  69.09µs | Process everything in single iteration, avoid sorting results in part 2 |
+| [Day 1](https://adventofcode.com/2022/day/1)   | [01.rs](src/bin/01.rs) |  77.66µs |  69.09µs | Process everything in single iteration, avoid sorting results in part 2 |
 | [Day 2](https://adventofcode.com/2022/day/2)   | [02.rs](src/bin/02.rs) |  81.87µs |  62.62µs | Use suitable representations to allow using modular arithmetic for comparisons |
 | [Day 3](https://adventofcode.com/2022/day/3)   | [03.rs](src/bin/03.rs) |  54.33µs |  51.12µs | Represent rucksack as a bitset |
 | [Day 4](https://adventofcode.com/2022/day/4)   | [04.rs](src/bin/04.rs) |  82.56µs |  69.46µs | - |
@@ -22,7 +22,7 @@ a total budget of 100 milliseconds.
 | [Day 10](https://adventofcode.com/2022/day/10) | [10.rs](src/bin/10.rs) |   5.37µs |   9.09µs | -     |
 | [Day 11](https://adventofcode.com/2022/day/11) | [11.rs](src/bin/11.rs) |  25.28µs |   5.42ms | 😔    |
 | [Day 12](https://adventofcode.com/2022/day/12) | [12.rs](src/bin/12.rs) | 767.46µs | 985.24µs | Search using A*, use custom map for distances |
-| [Day 13](https://adventofcode.com/2022/day/13) | [13.rs](src/bin/13.rs) | 391.39µs | 647.17µs | - |
+| [Day 13](https://adventofcode.com/2022/day/13) | [13.rs](src/bin/13.rs) |  22.63µs |  17.51µs | Avoid building trees, parse data only as far as needed |
 
 (Totally unscientific numbers from a single run, will improve these in the future.)
 
