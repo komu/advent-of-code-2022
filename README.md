@@ -22,6 +22,7 @@ a total budget of 100 milliseconds.
 | [Day 10](https://adventofcode.com/2022/day/10) | [10.rs](src/bin/10.rs) |   5.37µs |   9.09µs | -     |
 | [Day 11](https://adventofcode.com/2022/day/11) | [11.rs](src/bin/11.rs) |  25.28µs |   5.42ms | 😔    |
 | [Day 12](https://adventofcode.com/2022/day/12) | [12.rs](src/bin/12.rs) | 767.46µs | 985.24µs | Search using A*, use custom map for distances |
+| [Day 13](https://adventofcode.com/2022/day/13) | [13.rs](src/bin/13.rs) | 391.39µs | 647.17µs | - |
 
 (Totally unscientific numbers from a single run, will improve these in the future.)
 
