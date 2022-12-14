@@ -1,6 +1,8 @@
+use anyhow::anyhow;
 use std::{
     fmt::{Debug, Display},
     ops::Add,
+    str::FromStr,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -33,11 +35,29 @@ where
     }
 }
 
-impl<T> Point<T>
+impl<T> FromStr for Point<T>
 where
-    T: Copy + Add<Output = T>,
+    T: FromStr<Err = std::num::ParseIntError>,
 {
-    pub fn towards(&self, dx: T, dy: T) -> Point<T> {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (l, r) = s
+            .split_once(',')
+            .ok_or_else(|| anyhow!("no ',' in point '{}'", s))?;
+
+        Ok(Point {
+            x: l.parse()?,
+            y: r.parse()?,
+        })
+    }
+}
+
+impl<T> Point<T> {
+    pub fn towards(&self, dx: T, dy: T) -> Point<T>
+    where
+        T: Copy + Add<Output = T>,
+    {
         Point {
             x: self.x + dx,
             y: self.y + dy,
