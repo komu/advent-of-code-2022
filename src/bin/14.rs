@@ -51,7 +51,7 @@ pub fn part_two(input: &str) -> Option<u32> {
     let x_range = scan.x_range();
     let mut grid = Grid::new(
         x_range.start() - scan.height()..=x_range.end() + scan.height(),
-        scan.height() + 2,
+        scan.height() + 1,
     );
 
     grid.floor = true;
