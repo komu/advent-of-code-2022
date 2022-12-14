@@ -3,6 +3,8 @@ use std::{fmt::Debug, str::FromStr};
 use aoc::helpers::parse_lines;
 use hashbrown::HashSet;
 
+type Point = aoc::point::Point<i32>;
+
 pub fn part_one(input: &str) -> Option<usize> {
     Some(solve(input, 2))
 }
@@ -17,14 +19,14 @@ fn solve(input: &str, size: usize) -> usize {
 
     let mut knots: Vec<Point> = Vec::with_capacity(size);
     for _ in 0..size {
-        knots.push(Point { x: 0, y: 0 });
+        knots.push(Point::origin());
     }
 
     visited.insert(knots[size - 1]);
 
     for m in movements {
         for _ in 0..m.steps {
-            knots[0] = knots[0].towards(m.direction);
+            knots[0] = knots[0].towards(m.direction.dx, m.direction.dy);
 
             for i in 1..knots.len() {
                 let prev = knots[i - 1];
@@ -43,27 +45,6 @@ fn solve(input: &str, size: usize) -> usize {
     }
 
     visited.len()
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-struct Point {
-    x: i32,
-    y: i32,
-}
-
-impl Debug for Point {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{},{}", self.x, self.y))
-    }
-}
-
-impl Point {
-    fn towards(&self, d: Direction) -> Point {
-        Point {
-            x: self.x + d.dx,
-            y: self.y + d.dy,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy)]

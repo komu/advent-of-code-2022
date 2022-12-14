@@ -13,6 +13,7 @@ pub fn part_two(input: &str) -> Option<u16> {
 }
 
 type Height = u8;
+type Point = aoc::point::Point<i16>;
 
 #[derive(Debug)]
 struct HeightMap {
@@ -104,7 +105,7 @@ impl HeightMap {
     }
 
     fn heuristic_distance(&self, p: Point) -> u16 {
-        p.manhattan_distance(self.end) as u16
+        p.manhattan_distance(&self.end) as u16
     }
 }
 
@@ -155,18 +156,6 @@ impl FromStr for HeightMap {
             start,
             end,
         })
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Point {
-    x: i16,
-    y: i16,
-}
-
-impl Point {
-    fn manhattan_distance(&self, p: Point) -> u16 {
-        self.x.abs_diff(p.x) + self.y.abs_diff(p.y)
     }
 }
 
