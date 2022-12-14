@@ -6,9 +6,10 @@ type Coordinate = i16;
 type Point = aoc::point::Point<Coordinate>;
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let scan: Scan = input.parse().unwrap();
+    let scan = input.parse::<Scan>().unwrap();
+    let dims = scan.dimensions();
 
-    let mut grid = Grid::new(scan.x_range(), scan.height());
+    let mut grid = Grid::new(dims.min_x..=dims.max_x, dims.height);
 
     grid.add_paths(&scan.paths);
 
@@ -16,7 +17,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     let start = Point { x: 500, y: 0 };
 
     let mut point = start;
-    let mut path = vec![];
+    let mut path = Vec::with_capacity(200);
     loop {
         let down = point.towards(0, 1);
         let dl = point.towards(-1, 1);
@@ -46,19 +47,19 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let scan: Scan = input.parse().unwrap();
+    let scan = input.parse::<Scan>().unwrap();
+    let dims = scan.dimensions();
 
-    let x_range = scan.x_range();
     let mut grid = Grid::new(
-        x_range.start() - scan.height()..=x_range.end() + scan.height(),
-        scan.height() + 1,
+        dims.min_x - dims.height..=dims.max_x + dims.height,
+        dims.height + 1,
     );
 
     grid.floor = true;
     grid.add_paths(&scan.paths);
 
     let mut fill_count = 0;
-    let mut path = vec![];
+    let mut path = Vec::with_capacity(200);
     let mut point = Point { x: 500, y: 0 };
     loop {
         let down = point.towards(0, 1);
@@ -142,21 +143,26 @@ struct Scan {
     paths: Vec<Vec<Point>>,
 }
 
-impl Scan {
-    fn x_range(&self) -> RangeInclusive<Coordinate> {
-        let (min, max) = self
-            .paths
-            .iter()
-            .flatten()
-            .map(|p| p.x)
-            .minmax()
-            .into_option()
-            .unwrap();
-        min - 1..=max + 1
-    }
+struct ScanDimensions {
+    min_x: Coordinate,
+    max_x: Coordinate,
+    height: Coordinate
+}
 
-    fn height(&self) -> Coordinate {
-        1 + self.paths.iter().flatten().map(|p| p.y).max().unwrap()
+impl Scan {
+
+    fn dimensions(&self) -> ScanDimensions {
+        let mut min_x = Coordinate::max_value();
+        let mut max_x = Coordinate::min_value();
+        let mut max_y = Coordinate::min_value();
+
+        for p in self.paths.iter().flatten() {
+            min_x = min_x.min(p.x);
+            max_x = max_x.max(p.x);
+            max_y = max_y.max(p.y);
+        }
+
+        ScanDimensions { min_x: min_x - 1, max_x: max_x + 1, height: max_y + 1 }
     }
 }
 
