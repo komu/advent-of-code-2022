@@ -5,7 +5,7 @@ use std::{
     str::FromStr,
 };
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct Point<T> {
     pub x: T,
     pub y: T,
@@ -22,6 +22,12 @@ where
 
 impl Point<i16> {
     pub fn manhattan_distance(&self, p: &Self) -> u16 {
+        self.x.abs_diff(p.x) + self.y.abs_diff(p.y)
+    }
+}
+
+impl Point<i32> {
+    pub fn manhattan_distance(&self, p: &Self) -> u32 {
         self.x.abs_diff(p.x) + self.y.abs_diff(p.y)
     }
 }
