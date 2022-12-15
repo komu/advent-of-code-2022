@@ -146,11 +146,10 @@ struct Scan {
 struct ScanDimensions {
     min_x: Coordinate,
     max_x: Coordinate,
-    height: Coordinate
+    height: Coordinate,
 }
 
 impl Scan {
-
     fn dimensions(&self) -> ScanDimensions {
         let mut min_x = Coordinate::max_value();
         let mut max_x = Coordinate::min_value();
@@ -162,7 +161,11 @@ impl Scan {
             max_y = max_y.max(p.y);
         }
 
-        ScanDimensions { min_x: min_x - 1, max_x: max_x + 1, height: max_y + 1 }
+        ScanDimensions {
+            min_x: min_x - 1,
+            max_x: max_x + 1,
+            height: max_y + 1,
+        }
     }
 }
 
