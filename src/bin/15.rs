@@ -3,9 +3,9 @@ use aoc::helpers::parse_lines;
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
+use rayon::prelude::*;
 use regex::Regex;
 use std::{ops::RangeInclusive, str::FromStr};
-use rayon::prelude::*;
 
 type Point = aoc::point::Point<i32>;
 
