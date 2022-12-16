@@ -5,6 +5,7 @@ use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::{ops::RangeInclusive, str::FromStr};
+use rayon::prelude::*;
 
 type Point = aoc::point::Point<i32>;
 
@@ -48,7 +49,7 @@ fn part_one_y(input: &str, y: i32) -> Option<u32> {
 fn part_two_max(input: &str, max: i32) -> Option<u64> {
     let sensors: Vec<_> = parse_lines::<SensorData>(input).collect();
 
-    for y in 0..=max {
+    (0..=max).into_par_iter().find_map_any(|y| {
         let mut ranges: Vec<_> = sensors.iter().flat_map(|s| s.range_on_line(y)).collect();
         ranges.sort_by_key(|r| *r.start());
 
@@ -62,9 +63,9 @@ fn part_two_max(input: &str, max: i32) -> Option<u64> {
             }
             prev_end = prev_end.max(*r.end());
         }
-    }
 
-    None
+        None
+    })
 }
 
 #[derive(Debug)]
