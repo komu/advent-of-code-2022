@@ -25,7 +25,8 @@ a total budget of 100 milliseconds.
 | [13](https://adventofcode.com/2022/day/13) | [13.rs](src/bin/13.rs) |  22.63µs |  17.51µs | Avoid building trees, parse data only as far as needed |
 | [14](https://adventofcode.com/2022/day/14) | [14.rs](src/bin/14.rs) | 170.18µs | 365.68µs | Backtrack on the paths instead of starting all over |
 | [15](https://adventofcode.com/2022/day/15) | [15.rs](src/bin/15.rs) | 456.34µs | 122.09ms | 😔 |
-| [16](https://adventofcode.com/2022/day/16) | [16.rs](src/bin/16.rs) |  11.65ms |  60.74ms | 😔 |
+| [16](https://adventofcode.com/2022/day/16) | [16.rs](src/bin/16.rs) |  11.65ms |  13.40ms | 😔 |
+| [17](https://adventofcode.com/2022/day/17) | [17.rs](src/bin/17.rs) | 221.94µs | 326.42µs | - |
 
 (Totally unscientific numbers from a single run, will improve these in the future.)
 

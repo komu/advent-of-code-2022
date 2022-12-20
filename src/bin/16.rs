@@ -15,9 +15,16 @@ pub fn part_two(input: &str) -> Option<u16> {
     let valves = ValveMap::new(input);
     let answer = valves.search(26);
 
+    let threshold = answer.values().copied().max().unwrap() / 2;
+    let answers = answer
+        .iter()
+        .map(|(k, v)| (*k, *v))
+        .filter(|(_, v)| *v > threshold)
+        .collect::<Vec<_>>();
+
     let mut best = 0;
-    for (k1, v1) in &answer {
-        for (k2, v2) in &answer {
+    for (k1, v1) in &answers {
+        for (k2, v2) in &answers {
             if !k1.overlaps(*k2) {
                 best = best.max(v1 + v2);
             }
@@ -72,7 +79,11 @@ impl ValveMap {
             }
         }
 
-        let valves = valve_map.drain().filter(|v| v.1.rate != 0).map(|v| v.1).collect();
+        let valves = valve_map
+            .drain()
+            .filter(|v| v.1.rate != 0)
+            .map(|v| v.1)
+            .collect();
 
         ValveMap {
             start_id,
@@ -86,7 +97,14 @@ impl ValveMap {
         let remaining_flow = self.valves.iter().map(|v| v.rate).sum::<u16>();
 
         let mut answer = HashMap::new();
-        self.recurse(self.start_id, remaining_minutes, ValveSet::empty(), remaining_flow, 0, &mut answer);
+        self.recurse(
+            self.start_id,
+            remaining_minutes,
+            ValveSet::empty(),
+            remaining_flow,
+            0,
+            &mut answer,
+        );
         answer
     }
 
@@ -103,7 +121,7 @@ impl ValveMap {
         let best: u16 = match answer.entry(state) {
             Entry::Occupied(o) => {
                 let v = o.into_mut();
-                *v =flow.max(*v);
+                *v = flow.max(*v);
                 *v
             }
             Entry::Vacant(v) => {
