@@ -1,31 +1,32 @@
-use std::hash::Hash;
+use std::{cmp::Reverse, hash::Hash, str::FromStr};
 
-use hashbrown::{hash_map::Entry, HashMap};
+use aoc::helpers::parse_lines;
+use hashbrown::HashMap;
 use itertools::iproduct;
-use lazy_static::lazy_static;
-use regex::Regex;
 
 pub fn part_one(input: &str) -> Option<u16> {
     let valves = ValveMap::new(input);
     let answer = valves.search(30);
-    answer.values().copied().max()
+    answer.iter().copied().max()
 }
 
 pub fn part_two(input: &str) -> Option<u16> {
     let valves = ValveMap::new(input);
     let answer = valves.search(26);
 
-    let threshold = answer.values().copied().max().unwrap() / 2;
+    let threshold = answer.iter().copied().max().unwrap() / 2;
     let answers = answer
         .iter()
-        .map(|(k, v)| (*k, *v))
+        .copied()
+        .enumerate()
+        .map(|(k, v)| (k, v))
         .filter(|(_, v)| *v > threshold)
         .collect::<Vec<_>>();
 
     let mut best = 0;
-    for (k1, v1) in &answers {
-        for (k2, v2) in &answers {
-            if !k1.overlaps(*k2) {
+    for (i, (k1, v1)) in answers.iter().enumerate() {
+        for (k2, v2) in &answers[i + 1..] {
+            if k1 & k2 == 0 {
                 best = best.max(v1 + v2);
             }
         }
@@ -44,11 +45,17 @@ impl ValveMap {
     fn new(input: &str) -> ValveMap {
         let mut valve_map = HashMap::<ValveId, Valve>::new();
         let mut id_mapping = ValveIdMapping::new();
+        let mut valves = parse_lines::<ValveData>(input).collect::<Vec<_>>();
 
-        let start_id = id_mapping.get_id("AA");
+        // Move non-zero valves to front so that they'll get small ids and
+        // we can use them for indexing
+        valves.sort_by_key(|v| Reverse(v.rate));
+        for v in &valves {
+            id_mapping.get_id(&v.id);
+        }
 
-        for s in input.lines() {
-            let v = Valve::parse(s, &mut id_mapping);
+        for v in &valves {
+            let v = v.to_valve(&mut id_mapping);
             valve_map.insert(v.id, v);
         }
 
@@ -58,7 +65,7 @@ impl ValveMap {
         // Initial distances
         for valve in valve_map.values() {
             for tunnel in &valve.tunnels {
-                distances[valve.id.0 as usize * keys + tunnel.target.0 as usize] = tunnel.length;
+                distances[valve.id.0 as usize * keys + tunnel.0 as usize] = 1;
             }
         }
 
@@ -85,6 +92,8 @@ impl ValveMap {
             .map(|v| v.1)
             .collect();
 
+        let start_id = id_mapping.get_id("AA");
+
         ValveMap {
             start_id,
             valves,
@@ -93,10 +102,11 @@ impl ValveMap {
         }
     }
 
-    fn search(&self, remaining_minutes: u8) -> HashMap<ValveSet, u16> {
+    fn search(&self, remaining_minutes: u8) -> Vec<u16> {
         let remaining_flow = self.valves.iter().map(|v| v.rate).sum::<u16>();
+        let max_id = self.valves.iter().map(|v| v.id.0).max().unwrap();
 
-        let mut answer = HashMap::new();
+        let mut answer = vec![0; 2 << max_id];
         self.recurse(
             self.start_id,
             remaining_minutes,
@@ -115,20 +125,10 @@ impl ValveMap {
         state: ValveSet,
         remaining_flow: u16,
         flow: u16,
-        answer: &mut HashMap<ValveSet, u16>,
+        answer: &mut Vec<u16>,
     ) {
-        // memoize
-        let best: u16 = match answer.entry(state) {
-            Entry::Occupied(o) => {
-                let v = o.into_mut();
-                *v = flow.max(*v);
-                *v
-            }
-            Entry::Vacant(v) => {
-                v.insert(flow);
-                flow
-            }
-        };
+        let best = answer[state.0 as usize].max(flow);
+        answer[state.0 as usize] = best;
 
         if flow + remaining_flow * (remaining_minutes as u16 - 1) < best {
             return;
@@ -161,12 +161,13 @@ impl ValveMap {
 struct Valve {
     id: ValveId,
     rate: u16,
-    tunnels: Vec<Tunnel>,
+    tunnels: Vec<ValveId>,
 }
 
-struct Tunnel {
-    target: ValveId,
-    length: u8,
+struct ValveData {
+    id: String,
+    rate: u16,
+    tunnels: Vec<String>,
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Hash)]
@@ -186,35 +187,37 @@ impl ValveSet {
     fn contains(self, valve: ValveId) -> bool {
         self.0 & (1 << valve.0) != 0
     }
+}
 
-    #[must_use]
-    fn overlaps(self, rhs: ValveSet) -> bool {
-        (self.0 & rhs.0) != 0
+impl ValveData {
+    fn to_valve(&self, id_mapping: &mut ValveIdMapping) -> Valve {
+        Valve {
+            id: id_mapping.get_id(&self.id),
+            rate: self.rate,
+            tunnels: self.tunnels.iter().map(|t| id_mapping.get_id(t)).collect(),
+        }
     }
 }
 
-impl Valve {
-    fn parse(s: &str, id_mapping: &mut ValveIdMapping) -> Valve {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(
-                r"Valve ([A-Z][A-Z]) has flow rate=(\d+); tunnels? leads? to valves? (.+)"
-            )
-            .unwrap();
-        }
+impl FromStr for ValveData {
+    type Err = anyhow::Error;
 
-        let caps = RE.captures(s).unwrap();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let id = s[6..8].to_owned();
+        let (rate, rest) = &s[23..].split_once(';').unwrap();
+        let tunnels = rest
+            .split_once("valve")
+            .unwrap()
+            .1
+            .split_once(' ')
+            .unwrap()
+            .1;
 
-        Valve {
-            id: id_mapping.get_id(&caps[1]),
-            rate: caps[2].parse().unwrap(),
-            tunnels: caps[3]
-                .split(", ")
-                .map(|s| Tunnel {
-                    target: id_mapping.get_id(s),
-                    length: 1,
-                })
-                .collect(),
-        }
+        Ok(ValveData {
+            id,
+            rate: rate.parse().unwrap(),
+            tunnels: tunnels.split(", ").map(|s| s.to_owned()).collect(),
+        })
     }
 }
 
