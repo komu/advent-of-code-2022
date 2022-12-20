@@ -9,6 +9,9 @@
             "type": "cargo",
             "name": "cargo test",
             "cargoArgs": ["test"],
+            "environment": {
+                "RUST_BACKTRACE": "1"
+            },
         },
         {
             "type": "cargo",

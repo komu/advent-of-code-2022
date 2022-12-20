@@ -27,6 +27,7 @@ a total budget of 100 milliseconds.
 | [15](https://adventofcode.com/2022/day/15) | [15.rs](src/bin/15.rs) | 456.34µs | 122.09ms | 😔 |
 | [16](https://adventofcode.com/2022/day/16) | [16.rs](src/bin/16.rs) |   7.86ms |   8.43ms | 😔 |
 | [17](https://adventofcode.com/2022/day/17) | [17.rs](src/bin/17.rs) | 221.94µs | 326.42µs | Keep previous states in cache to find the period of the process |
+| [18](https://adventofcode.com/2022/day/18) | [18.rs](src/bin/18.rs) | 160.66µs | 437.68µs | - |
 
 (Totally unscientific numbers from a single run, will improve these in the future.)
 
