@@ -1,4 +1,4 @@
-use std::{str::FromStr, ops::Range};
+use std::{ops::Range, str::FromStr};
 
 use aoc::helpers::parse_lines;
 use bitset::BitSet;
@@ -71,7 +71,7 @@ impl PointSet {
         let size = (bounds.end - bounds.start) as usize;
         PointSet {
             bits: BitSet::with_capacity(size * size * size),
-            bounds: bounds
+            bounds,
         }
     }
 
@@ -107,7 +107,7 @@ impl SideSet {
         let size = (bounds.end - bounds.start) as usize;
         SideSet {
             bits: BitSet::with_capacity(size * size * size * 6),
-            bounds
+            bounds,
         }
     }
 
@@ -133,12 +133,12 @@ impl SideSet {
 #[derive(Clone, Copy, Sequence)]
 #[repr(u8)]
 enum Direction {
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN,
-    FORWARD,
-    BACKWARD,
+    Left,
+    Right,
+    Up,
+    Down,
+    Forward,
+    Backward,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -156,24 +156,24 @@ impl Point {
     fn towards(&self, d: Direction) -> Point {
         use Direction::*;
         match d {
-            LEFT => Point::new(self.x - 1, self.y, self.z),
-            RIGHT => Point::new(self.x + 1, self.y, self.z),
-            DOWN => Point::new(self.x, self.y - 1, self.z),
-            UP => Point::new(self.x, self.y + 1, self.z),
-            BACKWARD => Point::new(self.x, self.y, self.z - 1),
-            FORWARD => Point::new(self.x, self.y, self.z + 1),
+            Left => Point::new(self.x - 1, self.y, self.z),
+            Right => Point::new(self.x + 1, self.y, self.z),
+            Down => Point::new(self.x, self.y - 1, self.z),
+            Up => Point::new(self.x, self.y + 1, self.z),
+            Backward => Point::new(self.x, self.y, self.z - 1),
+            Forward => Point::new(self.x, self.y, self.z + 1),
         }
     }
 
     fn side_towards(&self, d: Direction) -> Side {
         use Direction::*;
         match d {
-            LEFT => Side::new(Axis::X, self.x, self.y, self.z),
-            RIGHT => Side::new(Axis::X, self.x + 1, self.y, self.z),
-            DOWN => Side::new(Axis::Y, self.x, self.y, self.z),
-            UP => Side::new(Axis::Y, self.x, self.y + 1, self.z),
-            BACKWARD => Side::new(Axis::Z, self.x, self.y, self.z),
-            FORWARD => Side::new(Axis::Z, self.x, self.y, self.z + 1),
+            Left => Side::new(Axis::X, self.x, self.y, self.z),
+            Right => Side::new(Axis::X, self.x + 1, self.y, self.z),
+            Down => Side::new(Axis::Y, self.x, self.y, self.z),
+            Up => Side::new(Axis::Y, self.x, self.y + 1, self.z),
+            Backward => Side::new(Axis::Z, self.x, self.y, self.z),
+            Forward => Side::new(Axis::Z, self.x, self.y, self.z + 1),
         }
     }
 
