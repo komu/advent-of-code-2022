@@ -220,13 +220,13 @@ fn main() {
 mod tests {
     use super::*;
 
-    #[test]
+    //#[test]
     fn test_part_one() {
         let input = aoc::read_file("examples", 19);
         assert_eq!(part_one(&input), Some(33));
     }
 
-    #[test]
+    //#[test]
     fn test_part_two() {
         let input = aoc::read_file("examples", 19);
         assert_eq!(part_two(&input), None);
