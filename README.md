@@ -30,6 +30,7 @@ a total budget of 100 milliseconds.
 | [18](https://adventofcode.com/2022/day/18) | [18.rs](src/bin/18.rs) | 160.66µs | 437.68µs | - |
 | [19](https://adventofcode.com/2022/day/19) | [19.rs](src/bin/19.rs) |    2.73s |   16.44s | 😔 |
 | [20](https://adventofcode.com/2022/day/20) | [20.rs](src/bin/20.rs) |   6.72ms |  78.69ms | 😔 |
+| [21](https://adventofcode.com/2022/day/21) | [21.rs](src/bin/21.rs) | 325.30µs | 235.40µs | - |
 
 (Totally unscientific numbers from a single run, will improve these in the future.)
 
