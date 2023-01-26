@@ -17,11 +17,11 @@ fn mix2(input: &str, key: Num, rounds: usize) -> Num {
     let mut indices: Vec<usize> = (0..numbers.len()).collect();
 
     for _ in 0..rounds {
-
         for (original_index, value) in numbers.iter().enumerate() {
             let old_index = indices.iter().position(|&x| x == original_index).unwrap();
 
-            let new_index = (old_index as Num + value).rem_euclid(numbers.len() as Num - 1) as usize;
+            let new_index =
+                (old_index as Num + value).rem_euclid(numbers.len() as Num - 1) as usize;
 
             indices.remove(old_index);
             indices.insert(new_index, original_index);
@@ -29,7 +29,10 @@ fn mix2(input: &str, key: Num, rounds: usize) -> Num {
     }
 
     let original_zero_index = numbers.iter().position(|&x| x == 0).unwrap();
-    let zero = indices.iter().position(|&i| i == original_zero_index).unwrap();
+    let zero = indices
+        .iter()
+        .position(|&i| i == original_zero_index)
+        .unwrap();
     let x1 = numbers[indices[(zero + 1000) % numbers.len()]];
     let x2 = numbers[indices[(zero + 2000) % numbers.len()]];
     let x3 = numbers[indices[(zero + 3000) % numbers.len()]];
@@ -135,9 +138,9 @@ impl NumList {
         delta %= len - 1;
 
         if delta > len / 2 {
-            delta -= len-1;
+            delta -= len - 1;
         } else if delta < -(len / 2) {
-            delta += len-1;
+            delta += len - 1;
         }
 
         delta %= len - 1;

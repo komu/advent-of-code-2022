@@ -4,17 +4,21 @@ use aoc::helpers::parse_lines;
 use hashbrown::HashMap;
 
 pub fn part_one(input: &str) -> Option<Num> {
-    let exps: HashMap<_, _> = parse_lines::<Assignment>(input).map(|a| (a.id, a.exp)).collect();
+    let exps: HashMap<_, _> = parse_lines::<Assignment>(input)
+        .map(|a| (a.id, a.exp))
+        .collect();
 
     Some(evaluate(&ExpId::from("root"), &exps))
 }
 
 pub fn part_two(input: &str) -> Option<Num> {
-    let exps: HashMap<_, _> = parse_lines::<Assignment>(input).map(|a| (a.id, a.exp)).collect();
+    let exps: HashMap<_, _> = parse_lines::<Assignment>(input)
+        .map(|a| (a.id, a.exp))
+        .collect();
 
     let (l, r) = match exps.get(&ExpId::from("root")) {
         Some(Exp::BinOp(l, _, r)) => (l, r),
-        _ => panic!("invalid root")
+        _ => panic!("invalid root"),
     };
 
     let l = rewrite(l, &exps);
@@ -59,7 +63,7 @@ fn invert(x: Num, exp: &Exp2) -> Option<Num> {
 
 fn rewrite(key: &ExpId, exps: &HashMap<ExpId, Exp>) -> Exp2 {
     if key == &ExpId::from("humn") {
-        return Exp2::Human
+        return Exp2::Human;
     }
     let exp = exps.get(key).unwrap();
     match exp {
@@ -69,7 +73,7 @@ fn rewrite(key: &ExpId, exps: &HashMap<ExpId, Exp>) -> Exp2 {
             let rhs = rewrite(r, exps);
             match (&lhs, &rhs) {
                 (Exp2::Constant(l), Exp2::Constant(r)) => Exp2::Constant(o.eval(*l, *r)),
-                _ => Exp2::BinOp(Box::new(lhs), *o, Box::new(rhs))
+                _ => Exp2::BinOp(Box::new(lhs), *o, Box::new(rhs)),
             }
         }
     }
@@ -80,8 +84,8 @@ fn evaluate(key: &ExpId, exps: &HashMap<ExpId, Exp>) -> Num {
     match exp {
         Exp::Constant(v) => *v,
         Exp::BinOp(l, o, r) => {
-            let lhs = evaluate(&l, exps);
-            let rhs = evaluate(&r, exps);
+            let lhs = evaluate(l, exps);
+            let rhs = evaluate(r, exps);
             o.eval(lhs, rhs)
         }
     }
@@ -97,7 +101,7 @@ impl From<&str> for ExpId {
         let s = s.as_bytes();
         assert_eq!(4, s.len());
 
-        ExpId((s[0] as u32) | ((s[1] as u32) << 8)  | ((s[2] as u32) << 16) | ((s[3] as u32) << 24))
+        ExpId((s[0] as u32) | ((s[1] as u32) << 8) | ((s[2] as u32) << 16) | ((s[3] as u32) << 24))
     }
 }
 
@@ -108,18 +112,17 @@ struct Assignment {
 
 enum Exp {
     Constant(Num),
-    BinOp(ExpId, Op, ExpId)
+    BinOp(ExpId, Op, ExpId),
 }
 
 #[derive(Debug)]
 enum Exp2 {
     Human,
     Constant(Num),
-    BinOp(Box<Exp2>, Op, Box<Exp2>)
+    BinOp(Box<Exp2>, Op, Box<Exp2>),
 }
 
 impl Exp2 {
-
     fn evaluate(&self) -> Option<Num> {
         match self {
             Exp2::Human => None,
@@ -136,7 +139,10 @@ impl Exp2 {
 
 #[derive(Clone, Copy, Debug)]
 enum Op {
-    Add, Sub, Mul, Div
+    Add,
+    Sub,
+    Mul,
+    Div,
 }
 
 impl Op {
@@ -157,7 +163,7 @@ impl From<char> for Op {
             '-' => Op::Sub,
             '*' => Op::Mul,
             '/' => Op::Div,
-            c => panic!("unknown char {c}")
+            c => panic!("unknown char {c}"),
         }
     }
 }
