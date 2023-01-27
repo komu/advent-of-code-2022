@@ -32,7 +32,7 @@ fn simulate_fast(tower: &mut Tower, total_rocks: u64) -> u64 {
         if let Some((old_rocks, old_height)) =
             seen.insert(tower.tower_state(), (rocks as u32, tower.height as u32))
         {
-            let rocks_in_period = (rocks - old_rocks as u64) as u64;
+            let rocks_in_period = rocks - old_rocks as u64;
             let height_per_period = (tower.height - old_height as i32) as u64;
             let added_periods = (total_rocks - rocks) / rocks_in_period;
 
