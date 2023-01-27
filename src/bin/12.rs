@@ -33,7 +33,7 @@ impl HeightMap {
 
     #[inline]
     fn index_of(&self, p: Point) -> usize {
-        p.y as usize * self.width as usize + p.x as usize
+        p.y as usize * self.width + p.x as usize
     }
 
     fn candidate_starts(&self) -> impl Iterator<Item = Point> + '_ {
@@ -105,7 +105,7 @@ impl HeightMap {
     }
 
     fn heuristic_distance(&self, p: Point) -> u16 {
-        p.manhattan_distance(&self.end) as u16
+        p.manhattan_distance(&self.end)
     }
 }
 
