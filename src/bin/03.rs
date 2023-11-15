@@ -103,9 +103,9 @@ impl Item {
 
 impl From<char> for Item {
     fn from(c: char) -> Self {
-        if ('a'..='z').contains(&c) {
+        if c.is_ascii_lowercase() {
             Item((c as u8) - b'a' + 1)
-        } else if ('A'..='Z').contains(&c) {
+        } else if c.is_ascii_uppercase() {
             Item((c as u8) - b'A' + 27)
         } else {
             panic!("unexpected char '{}'", c)

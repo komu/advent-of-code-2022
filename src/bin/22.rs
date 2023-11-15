@@ -100,10 +100,10 @@ fn map_point((a1, _a2): (Point, Point), (b1, b2): (Point, Point), p: Point) -> P
     let b_dx = (b2.x - b1.x).signum();
     let b_dy = (b2.y - b1.y).signum();
 
-    return Point {
+    Point {
         x: b1.x + d * b_dx,
         y: b1.y + d * b_dy,
-    };
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -234,10 +234,7 @@ fn example_wrap_definitions() -> Vec<WrapDefinition> {
             Boundary::bottom(8, 12, len),
             Boundary::bottom(0, 8, len).reverse(),
         ),
-        WrapDefinition::new(
-            Boundary::top(4, 4, len),
-            Boundary::left(8, 0, len),
-        ),
+        WrapDefinition::new(Boundary::top(4, 4, len), Boundary::left(8, 0, len)),
     ]
 }
 
@@ -294,7 +291,7 @@ impl WrapStrategy {
                     let (dx, dy) = facing.deltas();
                     p = p.towards(dx, dy);
                 }
-                return (p, facing);
+                (p, facing)
             }
             WrapStrategy::Complex(wraps) => {
                 for wrap in wraps {
@@ -390,7 +387,7 @@ impl<'a> MonkeyMap<'a> {
         mut p: Point,
         mut facing: Facing,
         wrap_strategy: &WrapStrategy,
-        ) -> Option<(Point, Facing)> {
+    ) -> Option<(Point, Facing)> {
         let (dx, dy) = facing.deltas();
 
         p = p.towards(dx, dy);
