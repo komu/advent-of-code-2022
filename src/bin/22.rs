@@ -33,7 +33,6 @@ fn run(map: MonkeyMap, wrap_strategy: WrapStrategy) -> u32 {
                     } else {
                         break;
                     }
-                    map.dump(position);
                 }
             }
             Instruction::Turn(t) => facing.turn(t),
@@ -411,29 +410,6 @@ impl<'a> MonkeyMap<'a> {
             }
         }
         b' '
-    }
-
-    fn dump(&self, p: Point) {
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let pt = Point { x, y };
-                if pt == p {
-                    print!("@");
-                } else {
-                    let v = self.get(pt);
-                    if v == b'.' {
-                        print!(".");
-                    } else if v == b' ' {
-                        print!(" ");
-                    } else {
-                        print!("#");
-                    }
-                }
-            }
-            println!();
-        }
-        println!();
-        println!();
     }
 }
 
