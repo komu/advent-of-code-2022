@@ -1,9 +1,10 @@
-use anyhow::anyhow;
 use std::{
     fmt::{Debug, Display},
     ops::Add,
     str::FromStr,
 };
+
+use anyhow::anyhow;
 use enum_iterator::Sequence;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
@@ -99,7 +100,7 @@ impl CompassDirection {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Sequence)]
 pub enum CardinalDirection {
     N,
     S,
@@ -108,6 +109,17 @@ pub enum CardinalDirection {
 }
 
 impl CardinalDirection {
+
+    pub fn for_code(c: char) -> Self {
+        match c {
+            '^' => Self::N,
+            'v' => Self::S,
+            '<' => Self::W,
+            '>' => Self::E,
+            _ => panic!("unknown cardinal direction: '{c}'"),
+        }
+    }
+
     pub fn deltas(self) -> (i32, i32) {
         match self {
             CardinalDirection::N => (0, -1),
