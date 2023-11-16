@@ -4,6 +4,7 @@ use std::{
     ops::Add,
     str::FromStr,
 };
+use enum_iterator::Sequence;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct Point<T> {
@@ -67,6 +68,52 @@ impl<T> Point<T> {
         Point {
             x: self.x + dx,
             y: self.y + dy,
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Sequence)]
+pub enum CompassDirection {
+    N,
+    S,
+    W,
+    E,
+    NE,
+    NW,
+    SE,
+    SW,
+}
+
+impl CompassDirection {
+    pub fn deltas(self) -> (i32, i32) {
+        match self {
+            CompassDirection::N => (0, -1),
+            CompassDirection::S => (0, 1),
+            CompassDirection::W => (-1, 0),
+            CompassDirection::E => (1, 0),
+            CompassDirection::NE => (1, -1),
+            CompassDirection::NW => (-1, -1),
+            CompassDirection::SE => (1, 1),
+            CompassDirection::SW => (-1, 1),
+        }
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum CardinalDirection {
+    N,
+    S,
+    W,
+    E,
+}
+
+impl CardinalDirection {
+    pub fn deltas(self) -> (i32, i32) {
+        match self {
+            CardinalDirection::N => (0, -1),
+            CardinalDirection::S => (0, 1),
+            CardinalDirection::W => (-1, 0),
+            CardinalDirection::E => (1, 0),
         }
     }
 }

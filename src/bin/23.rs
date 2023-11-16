@@ -1,61 +1,7 @@
-use enum_iterator::{all, Sequence};
+use enum_iterator::all;
 use hashbrown::{HashMap, HashSet};
 use itertools::Itertools;
-
-#[derive(Sequence)]
-enum Direction {
-    N,
-    S,
-    W,
-    E,
-    NE,
-    NW,
-    SE,
-    SW,
-}
-
-impl Direction {
-    fn deltas(self) -> (i32, i32) {
-        match self {
-            Direction::N => (0, -1),
-            Direction::S => (0, 1),
-            Direction::W => (-1, 0),
-            Direction::E => (1, 0),
-            Direction::NE => (1, -1),
-            Direction::NW => (-1, -1),
-            Direction::SE => (1, 1),
-            Direction::SW => (-1, 1),
-        }
-    }
-}
-
-#[derive(Copy, Clone, PartialEq, Eq)]
-enum CardinalDirection {
-    N,
-    S,
-    W,
-    E,
-}
-
-impl CardinalDirection {
-    fn deltas(self) -> (i32, i32) {
-        match self {
-            CardinalDirection::N => (0, -1),
-            CardinalDirection::S => (0, 1),
-            CardinalDirection::W => (-1, 0),
-            CardinalDirection::E => (1, 0),
-        }
-    }
-
-    fn adjacent(self) -> Vec<Direction> {
-        match self {
-            CardinalDirection::N => vec![Direction::N, Direction::NE, Direction::NW],
-            CardinalDirection::S => vec![Direction::S, Direction::SE, Direction::SW],
-            CardinalDirection::W => vec![Direction::W, Direction::NW, Direction::SW],
-            CardinalDirection::E => vec![Direction::E, Direction::NE, Direction::SE],
-        }
-    }
-}
+use aoc::point::{CardinalDirection, CompassDirection};
 
 pub fn part_one(input: &str) -> Option<u32> {
     Some(run(input, 10, false))
@@ -133,12 +79,12 @@ struct ElfMap {
 impl ElfMap {
     fn proposal(&self, elf: &Point, directions: &[CardinalDirection]) -> Option<Point> {
         if self.is_alone(elf) {
-            return None
+            return None;
         }
         for &cd in directions {
             if self.is_free(elf, cd) {
                 let (dx, dy) = cd.deltas();
-                return Some(elf.towards(dx, dy))
+                return Some(elf.towards(dx, dy));
             }
         }
         None
@@ -147,7 +93,7 @@ impl ElfMap {
 
 impl ElfMap {
     fn is_alone(&self, p: &Point) -> bool {
-        for d in all::<Direction>() {
+        for d in all::<CompassDirection>() {
             let (dx, dy) = d.deltas();
             let p2 = p.towards(dx, dy);
             if self.elves.contains(&p2) {
@@ -158,7 +104,14 @@ impl ElfMap {
     }
 
     fn is_free(&self, p: &Point, cd: CardinalDirection) -> bool {
-        for d in cd.adjacent() {
+        let adjacent = match cd {
+            CardinalDirection::N => vec![CompassDirection::N, CompassDirection::NE, CompassDirection::NW],
+            CardinalDirection::S => vec![CompassDirection::S, CompassDirection::SE, CompassDirection::SW],
+            CardinalDirection::W => vec![CompassDirection::W, CompassDirection::NW, CompassDirection::SW],
+            CardinalDirection::E => vec![CompassDirection::E, CompassDirection::NE, CompassDirection::SE],
+        };
+
+        for d in adjacent {
             let (dx, dy) = d.deltas();
             let p2 = p.towards(dx, dy);
             if self.elves.contains(&p2) {
