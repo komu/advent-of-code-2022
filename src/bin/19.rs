@@ -7,18 +7,16 @@ use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::Regex;
 
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn part_one(input: &str) -> Option<u16> {
     let blueprints = parse_lines::<Blueprint>(input).collect::<Vec<_>>();
 
-    let result = blueprints.par_iter().map(|b| b.id * b.max_geodes(24)).sum();
-    Some(result)
+    Some(blueprints.par_iter().map(|b| b.id as u16 * b.max_geodes(24) as u16).sum())
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
+pub fn part_two(input: &str) -> Option<u16> {
     let blueprints = parse_lines::<Blueprint>(input).take(3).collect::<Vec<_>>();
 
-    let result = blueprints.par_iter().map(|b| b.max_geodes(32)).product();
-    Some(result)
+    Some(blueprints.par_iter().map(|b| b.max_geodes(32) as u16).product())
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -29,11 +27,15 @@ enum Material {
     Geode,
 }
 
-type Cost = u32;
+type Minutes = u8;
+type OreCount = u8;
+type GeodeCount = u8;
+type Cost = u8;
+type RobotCount = u8;
 
 #[derive(Debug)]
 struct Blueprint {
-    id: u32,
+    id: u8,
     ore_robot_ore_cost: Cost,
     clay_robot_ore_cost: Cost,
     obsidian_robot_ore_cost: Cost,
@@ -42,21 +44,21 @@ struct Blueprint {
     geode_robot_obsidian_cost: Cost,
 }
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct SearchState {
-    remaining_minutes: u8,
-    ore_robots: u32,
-    clay_robots: u32,
-    obsidian_robots: u32,
-    geode_robots: u32,
-    ore: u32,
-    clay: u32,
-    obsidian: u32,
-    geodes: u32,
+    remaining_minutes: Minutes,
+    ore_robots: RobotCount,
+    clay_robots: RobotCount,
+    obsidian_robots: RobotCount,
+    geode_robots: RobotCount,
+    ore: OreCount,
+    clay: OreCount,
+    obsidian: OreCount,
+    geodes: GeodeCount,
 }
 
 impl SearchState {
-    fn new(remaining_minutes: u8) -> Self {
+    fn new(remaining_minutes: Minutes) -> Self {
         SearchState {
             remaining_minutes,
             ore_robots: 1,
@@ -70,11 +72,25 @@ impl SearchState {
         }
     }
 
+    // Provides an estimate on how many geodes will be found from this state
+    fn geode_estimate(&self) -> GeodeCount {
+        let extra = match self.remaining_minutes {
+            0..=2 => 0,
+            3..=4 => 1,
+            5..=5 => 2,
+            6..=9 => 3,
+            10..=13 => 4,
+            _ => 5
+        };
+
+        self.geodes + self.remaining_minutes as GeodeCount * (self.geode_robots as GeodeCount + extra)
+    }
+
     fn collect_materials(&mut self) {
-        self.ore += self.ore_robots;
-        self.clay += self.clay_robots;
-        self.obsidian += self.obsidian_robots;
-        self.geodes += self.geode_robots;
+        self.ore += self.ore_robots as OreCount;
+        self.clay += self.clay_robots as OreCount;
+        self.obsidian += self.obsidian_robots as OreCount;
+        self.geodes += self.geode_robots as GeodeCount;
     }
 
     fn build_robot(&mut self, robot_type: Material, blueprint: &Blueprint) {
@@ -117,7 +133,7 @@ impl SearchState {
 }
 
 impl Blueprint {
-    fn max_geodes(&self, minutes: u8) -> u32 {
+    fn max_geodes(&self, minutes: Minutes) -> GeodeCount {
         let mut cache = HashMap::new();
         let mut best = 0;
         self.recurse(SearchState::new(minutes), &mut cache, &mut best)
@@ -126,44 +142,47 @@ impl Blueprint {
     fn recurse(
         &self,
         mut state: SearchState,
-        cache: &mut HashMap<SearchState, u32>,
-        best: &mut u32,
-    ) -> u32 {
+        cache: &mut HashMap<SearchState, GeodeCount>,
+        best: &mut GeodeCount,
+    ) -> GeodeCount {
+
+        let cacheable = state.remaining_minutes < 25;
         if state.remaining_minutes == 0 {
             if state.geodes > *best {
                 *best = state.geodes;
             }
             return state.geodes;
+        } else if state.geode_estimate() < *best {
+            return 0
+        } else if cacheable {
+            if let Some(result) = cache.get(&state) {
+                return *result;
+            }
         }
 
         let original_state = state.clone();
-        if let Some(result) = cache.get(&original_state) {
-            return *result;
-        }
+
+        let can_build_geode_robot = state.can_build(Material::Geode, self);
+        let can_build_obsidian_robot = state.can_build(Material::Obsidian, self);
+        let can_build_clay_robot = state.can_build(Material::Clay, self);
+        let can_build_ore_robot = state.can_build(Material::Ore, self);
 
         state.remaining_minutes -= 1;
+        state.collect_materials();
 
         let mut result = 0;
-        if state.can_build(Material::Geode, self) {
-            state.collect_materials();
-
+        if can_build_geode_robot {
             state.build_robot(Material::Geode, self);
             result = result.max(self.recurse(state, cache, best));
-        } else if state.can_build(Material::Obsidian, self) {
-            state.collect_materials();
 
-            result = result.max(self.recurse(state.clone(), cache, best));
+        } else if can_build_obsidian_robot {
+            let without_robot = state.clone();
 
             state.build_robot(Material::Obsidian, self);
             result = result.max(self.recurse(state, cache, best));
+            result = result.max(self.recurse(without_robot, cache, best));
+
         } else {
-            let can_build_clay_robot = state.can_build(Material::Clay, self);
-            let can_build_ore_robot = state.can_build(Material::Ore, self);
-
-            state.collect_materials();
-
-            result = result.max(self.recurse(state.clone(), cache, best));
-
             if can_build_clay_robot {
                 let mut new_state = state.clone();
                 new_state.build_robot(Material::Clay, self);
@@ -175,9 +194,13 @@ impl Blueprint {
                 new_state.build_robot(Material::Ore, self);
                 result = result.max(self.recurse(new_state, cache, best));
             }
+
+            result = result.max(self.recurse(state, cache, best));
         }
 
-        cache.insert(original_state, result);
+        if cacheable {
+            cache.insert(original_state, result);
+        }
 
         result
     }
@@ -220,15 +243,15 @@ fn main() {
 mod tests {
     use super::*;
 
-    //#[test]
+    #[test]
     fn test_part_one() {
         let input = aoc::read_file("examples", 19);
         assert_eq!(part_one(&input), Some(33));
     }
 
-    //#[test]
+    #[test]
     fn test_part_two() {
         let input = aoc::read_file("examples", 19);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(3348));
     }
 }
