@@ -1,16 +1,13 @@
-use std::cmp::Reverse;
 use std::iter::once;
-
-use priority_queue::PriorityQueue;
-
 use aoc::point::CardinalDirection;
+use aoc::shortest_path::{Graph, shortest_path_len};
 
 pub fn part_one(input: &str) -> Option<u32> {
-    Basin::parse(input).shortest_path_len(false)
+    Basin::parse(input, false).shortest_path()
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    Basin::parse(input).shortest_path_len(true)
+    Basin::parse(input, true).shortest_path()
 }
 
 type Minutes = u32;
@@ -67,10 +64,11 @@ struct Basin {
     width: Coordinate,
     height: Coordinate,
     blizzards: Vec<Blizzard>,
+    go_back_to_start: bool,
 }
 
 impl Basin {
-    fn parse(s: &str) -> Self {
+    fn parse(s: &str, go_back_to_start: bool) -> Self {
         let lines: Vec<_> = s.lines().filter(|l| l.starts_with('#')).collect();
 
         let mut blizzards = Vec::<Blizzard>::new();
@@ -96,6 +94,7 @@ impl Basin {
             width,
             height,
             blizzards,
+            go_back_to_start,
         }
     }
 
@@ -109,33 +108,27 @@ impl Basin {
         }
     }
 
-    fn shortest_path_len(&self, go_back_to_start: bool) -> Option<u32> {
+    fn shortest_path(&self) -> Option<u32> {
         let start = SearchState {
             pos: self.start,
             minutes: 0,
             state: TripState::Initial,
         };
+        shortest_path_len(self, start).map(|x|x.1)
+    }
+}
 
-        let mut queue = PriorityQueue::<SearchState, Reverse<Minutes>>::new();
-        queue.push(start, Reverse(start.minutes));
+impl Graph for Basin {
+    type Node = SearchState;
 
-        while let Some((current, _)) = queue.pop() {
-            if current.pos == self.end && (!go_back_to_start || current.state == TripState::VisitedStartAfterEnd) {
-                return Some(current.minutes);
-            }
-
-            for neighbor in self.neighbors(&current) {
-                queue.push(neighbor, Reverse(neighbor.minutes));
-            }
-        }
-
-        None
+    fn is_solution(&self, node: &Self::Node) -> bool {
+        node.pos == self.end && (!self.go_back_to_start || node.state == TripState::VisitedStartAfterEnd)
     }
 
-    fn neighbors(&self, current: &SearchState) -> impl Iterator<Item=SearchState> + '_ {
-        let current_pos = current.pos;
-        let current_minutes = current.minutes;
-        let current_state = current.state;
+    fn collect_neighbors(&self, node: &Self::Node, neighbors: &mut Vec<(Self::Node, u32)>) {
+        let current_pos = node.pos;
+        let current_minutes = node.minutes;
+        let current_state = node.state;
 
         let wait_state = SearchState {
             pos: current_pos,
@@ -155,12 +148,28 @@ impl Basin {
                         Initial => if pos == self.end { VisitedEnd } else { Initial }
                         VisitedEnd => if pos == self.start { VisitedStartAfterEnd } else { VisitedEnd }
                         VisitedStartAfterEnd => VisitedStartAfterEnd
-                    }
+                    },
                 }
             });
 
-        move_states.chain(once(wait_state))
+        let cs = move_states.chain(once(wait_state))
             .filter(|s| self.is_empty(s.pos, s.minutes))
+            .map(|n| (n, 1));
+
+        neighbors.extend(cs);
+    }
+
+    fn heuristic_distance(&self, node: &Self::Node) -> u32 {
+        if self.go_back_to_start {
+            let start_to_end = self.start.manhattan_distance(&self.end);
+            (match node.state {
+                TripState::Initial => 2 * start_to_end + node.pos.manhattan_distance(&self.end),
+                TripState::VisitedEnd => start_to_end + node.pos.manhattan_distance(&self.start),
+                TripState::VisitedStartAfterEnd => node.pos.manhattan_distance(&self.end),
+            }) as u32
+        } else {
+            node.pos.manhattan_distance(&self.end) as u32
+        }
     }
 }
 

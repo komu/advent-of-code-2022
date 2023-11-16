@@ -33,10 +33,11 @@ a total budget of 100 milliseconds.
 | [21](https://adventofcode.com/2022/day/21) | [21.rs](src/bin/21.rs) | 325.30µs | 235.40µs | -                                                                              |
 | [22](https://adventofcode.com/2022/day/22) | [22.rs](src/bin/22.rs) | 139.31µs | 127.73µs | -                                                                              |
 | [23](https://adventofcode.com/2022/day/23) | [23.rs](src/bin/23.rs) |  15.51ms | 831.17ms | 😔                                                                             |
-| [24](https://adventofcode.com/2022/day/24) | [24.rs](src/bin/24.rs) |    9.62s |   92.24s | 😔                                                                             |
+| [24](https://adventofcode.com/2022/day/24) | [24.rs](src/bin/24.rs) |    4.21s |   39.31s | 😔                                                                             |
 | [25](https://adventofcode.com/2022/day/25) | [25.rs](src/bin/25.rs) |  18.00ns |        - | -                                                                              |
 
-(Totally unscientific numbers from a single run, will improve these in the future.)
+In the end, days 15, 19, 23 and 24 blew the 100 ms budget by themselves, but ignoring those the total time for the rest
+of the 21 days is 114 ms, which is pretty decent.
 
 ## Previous years
 

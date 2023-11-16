@@ -8,6 +8,7 @@ use std::fs;
 
 pub mod helpers;
 pub mod point;
+pub mod shortest_path;
 
 pub const ANSI_ITALIC: &str = "\x1b[3m";
 pub const ANSI_BOLD: &str = "\x1b[1m";
