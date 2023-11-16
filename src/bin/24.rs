@@ -71,7 +71,7 @@ struct Basin {
 
 impl Basin {
     fn parse(s: &str) -> Self {
-        let lines: Vec<_> = s.lines().filter(|l| l.starts_with("#")).collect();
+        let lines: Vec<_> = s.lines().filter(|l| l.starts_with('#')).collect();
 
         let mut blizzards = Vec::<Blizzard>::new();
 
@@ -159,8 +159,8 @@ impl Basin {
                 }
             });
 
-        return move_states.chain(once(wait_state))
-            .filter(|s| self.is_empty(s.pos, s.minutes));
+        move_states.chain(once(wait_state))
+            .filter(|s| self.is_empty(s.pos, s.minutes))
     }
 }
 

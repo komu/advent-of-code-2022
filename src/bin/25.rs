@@ -31,7 +31,7 @@ fn int_to_snafu(mut num: i64) -> String {
 const SNAFU_DIGITS: [char; 5] = ['=', '-', '0', '1', '2'];
 
 fn snafu_digit_to_char(c: i64) -> char {
-    return SNAFU_DIGITS[(c + 2) as usize];
+    SNAFU_DIGITS[(c + 2) as usize]
 }
 
 fn snafu_char_to_digit(c: char) -> i64 {
