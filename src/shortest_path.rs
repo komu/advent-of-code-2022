@@ -13,8 +13,8 @@ pub trait Graph {
 }
 
 pub fn shortest_path_len<G>(g: &G, start: G::Node) -> Option<(G::Node, u32)>
-    where
-        G: Graph,
+where
+    G: Graph,
 {
     let mut g_score = HashMap::<G::Node, u32>::new();
     let mut open_set = PriorityQueue::<G::Node, Reverse<u32>>::new();

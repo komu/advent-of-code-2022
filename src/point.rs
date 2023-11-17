@@ -22,6 +22,12 @@ where
     }
 }
 
+impl Point<i8> {
+    pub fn manhattan_distance(&self, p: &Self) -> u8 {
+        self.x.abs_diff(p.x) + self.y.abs_diff(p.y)
+    }
+}
+
 impl Point<i16> {
     pub fn manhattan_distance(&self, p: &Self) -> u16 {
         self.x.abs_diff(p.x) + self.y.abs_diff(p.y)
@@ -109,7 +115,6 @@ pub enum CardinalDirection {
 }
 
 impl CardinalDirection {
-
     pub fn for_code(c: char) -> Self {
         match c {
             '^' => Self::N,

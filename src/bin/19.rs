@@ -10,13 +10,23 @@ use regex::Regex;
 pub fn part_one(input: &str) -> Option<u16> {
     let blueprints = parse_lines::<Blueprint>(input).collect::<Vec<_>>();
 
-    Some(blueprints.par_iter().map(|b| b.id as u16 * b.max_geodes(24) as u16).sum())
+    Some(
+        blueprints
+            .par_iter()
+            .map(|b| b.id as u16 * b.max_geodes(24) as u16)
+            .sum(),
+    )
 }
 
 pub fn part_two(input: &str) -> Option<u16> {
     let blueprints = parse_lines::<Blueprint>(input).take(3).collect::<Vec<_>>();
 
-    Some(blueprints.par_iter().map(|b| b.max_geodes(32) as u16).product())
+    Some(
+        blueprints
+            .par_iter()
+            .map(|b| b.max_geodes(32) as u16)
+            .product(),
+    )
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -80,10 +90,11 @@ impl SearchState {
             5..=5 => 2,
             6..=9 => 3,
             10..=13 => 4,
-            _ => 5
+            _ => 5,
         };
 
-        self.geodes + self.remaining_minutes as GeodeCount * (self.geode_robots as GeodeCount + extra)
+        self.geodes
+            + self.remaining_minutes as GeodeCount * (self.geode_robots as GeodeCount + extra)
     }
 
     fn collect_materials(&mut self) {
@@ -145,7 +156,6 @@ impl Blueprint {
         cache: &mut HashMap<SearchState, GeodeCount>,
         best: &mut GeodeCount,
     ) -> GeodeCount {
-
         let cacheable = state.remaining_minutes < 25;
         if state.remaining_minutes == 0 {
             if state.geodes > *best {
@@ -153,7 +163,7 @@ impl Blueprint {
             }
             return state.geodes;
         } else if state.geode_estimate() < *best {
-            return 0
+            return 0;
         } else if cacheable {
             if let Some(result) = cache.get(&state) {
                 return *result;
@@ -174,14 +184,12 @@ impl Blueprint {
         if can_build_geode_robot {
             state.build_robot(Material::Geode, self);
             result = result.max(self.recurse(state, cache, best));
-
         } else if can_build_obsidian_robot {
             let without_robot = state.clone();
 
             state.build_robot(Material::Obsidian, self);
             result = result.max(self.recurse(state, cache, best));
             result = result.max(self.recurse(without_robot, cache, best));
-
         } else {
             if can_build_clay_robot {
                 let mut new_state = state.clone();

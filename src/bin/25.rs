@@ -7,9 +7,11 @@ pub fn part_two(_input: &str) -> Option<u32> {
 }
 
 fn snafu_to_int(s: &str) -> i64 {
-    s.chars().rev().enumerate().map(|(i, c)|
-        snafu_char_to_digit(c) * 5_i64.pow(i as u32)
-    ).sum()
+    s.chars()
+        .rev()
+        .enumerate()
+        .map(|(i, c)| snafu_char_to_digit(c) * 5_i64.pow(i as u32))
+        .sum()
 }
 
 fn int_to_snafu(mut num: i64) -> String {
@@ -35,7 +37,13 @@ fn snafu_digit_to_char(c: i64) -> char {
 }
 
 fn snafu_char_to_digit(c: char) -> i64 {
-    SNAFU_DIGITS.iter().enumerate().find(|&(_, &val)| val == c).unwrap().0 as i64 - 2
+    SNAFU_DIGITS
+        .iter()
+        .enumerate()
+        .find(|&(_, &val)| val == c)
+        .unwrap()
+        .0 as i64
+        - 2
 }
 
 fn main() {

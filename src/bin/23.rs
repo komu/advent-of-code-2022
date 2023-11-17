@@ -1,7 +1,7 @@
+use aoc::point::{CardinalDirection, CompassDirection};
 use enum_iterator::all;
 use hashbrown::{HashMap, HashSet};
 use itertools::Itertools;
-use aoc::point::{CardinalDirection, CompassDirection};
 
 pub fn part_one(input: &str) -> Option<u32> {
     Some(run(input, 10, false))
@@ -15,10 +15,30 @@ pub fn run(input: &str, rounds: u32, round_count: bool) -> u32 {
     let mut elves = ElfMap::parse(input);
 
     let directions_vecs = vec![
-        vec![CardinalDirection::N, CardinalDirection::S, CardinalDirection::W, CardinalDirection::E],
-        vec![CardinalDirection::S, CardinalDirection::W, CardinalDirection::E, CardinalDirection::N],
-        vec![CardinalDirection::W, CardinalDirection::E, CardinalDirection::N, CardinalDirection::S],
-        vec![CardinalDirection::E, CardinalDirection::N, CardinalDirection::S, CardinalDirection::W],
+        vec![
+            CardinalDirection::N,
+            CardinalDirection::S,
+            CardinalDirection::W,
+            CardinalDirection::E,
+        ],
+        vec![
+            CardinalDirection::S,
+            CardinalDirection::W,
+            CardinalDirection::E,
+            CardinalDirection::N,
+        ],
+        vec![
+            CardinalDirection::W,
+            CardinalDirection::E,
+            CardinalDirection::N,
+            CardinalDirection::S,
+        ],
+        vec![
+            CardinalDirection::E,
+            CardinalDirection::N,
+            CardinalDirection::S,
+            CardinalDirection::W,
+        ],
     ];
 
     for r in 0..rounds {
@@ -61,8 +81,20 @@ pub fn run(input: &str, rounds: u32, round_count: bool) -> u32 {
         panic!("no result");
     }
 
-    let (x_min, x_max) = elves.elves.iter().map(|e| e.x).minmax().into_option().unwrap();
-    let (y_min, y_max) = elves.elves.iter().map(|e| e.y).minmax().into_option().unwrap();
+    let (x_min, x_max) = elves
+        .elves
+        .iter()
+        .map(|e| e.x)
+        .minmax()
+        .into_option()
+        .unwrap();
+    let (y_min, y_max) = elves
+        .elves
+        .iter()
+        .map(|e| e.y)
+        .minmax()
+        .into_option()
+        .unwrap();
 
     let w = (x_max - x_min + 1) as u32;
     let h = (y_max - y_min + 1) as u32;
@@ -105,10 +137,26 @@ impl ElfMap {
 
     fn is_free(&self, p: &Point, cd: CardinalDirection) -> bool {
         let adjacent = match cd {
-            CardinalDirection::N => vec![CompassDirection::N, CompassDirection::NE, CompassDirection::NW],
-            CardinalDirection::S => vec![CompassDirection::S, CompassDirection::SE, CompassDirection::SW],
-            CardinalDirection::W => vec![CompassDirection::W, CompassDirection::NW, CompassDirection::SW],
-            CardinalDirection::E => vec![CompassDirection::E, CompassDirection::NE, CompassDirection::SE],
+            CardinalDirection::N => vec![
+                CompassDirection::N,
+                CompassDirection::NE,
+                CompassDirection::NW,
+            ],
+            CardinalDirection::S => vec![
+                CompassDirection::S,
+                CompassDirection::SE,
+                CompassDirection::SW,
+            ],
+            CardinalDirection::W => vec![
+                CompassDirection::W,
+                CompassDirection::NW,
+                CompassDirection::SW,
+            ],
+            CardinalDirection::E => vec![
+                CompassDirection::E,
+                CompassDirection::NE,
+                CompassDirection::SE,
+            ],
         };
 
         for d in adjacent {
@@ -123,8 +171,20 @@ impl ElfMap {
 
     #[allow(dead_code)]
     fn dump(&self) {
-        let (x_min, x_max) = self.elves.iter().map(|e| e.x).minmax().into_option().unwrap();
-        let (y_min, y_max) = self.elves.iter().map(|e| e.y).minmax().into_option().unwrap();
+        let (x_min, x_max) = self
+            .elves
+            .iter()
+            .map(|e| e.x)
+            .minmax()
+            .into_option()
+            .unwrap();
+        let (y_min, y_max) = self
+            .elves
+            .iter()
+            .map(|e| e.y)
+            .minmax()
+            .into_option()
+            .unwrap();
 
         for y in y_min..=y_max {
             for x in x_min..=x_max {
@@ -143,7 +203,9 @@ impl ElfMap {
 
 impl ElfMap {
     fn new() -> Self {
-        ElfMap { elves: HashSet::new() }
+        ElfMap {
+            elves: HashSet::new(),
+        }
     }
 
     fn parse(s: &str) -> Self {
@@ -152,14 +214,15 @@ impl ElfMap {
         for (y, line) in s.lines().enumerate() {
             for (x, c) in line.chars().enumerate() {
                 if c == '#' {
-                    elves.insert(Point { x: x as i32, y: y as i32 });
+                    elves.insert(Point {
+                        x: x as i32,
+                        y: y as i32,
+                    });
                 }
             }
         }
 
-        ElfMap {
-            elves
-        }
+        ElfMap { elves }
     }
 }
 

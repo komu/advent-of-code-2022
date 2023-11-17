@@ -1,6 +1,7 @@
-use std::iter::once;
 use aoc::point::CardinalDirection;
-use aoc::shortest_path::{Graph, shortest_path_len};
+use aoc::shortest_path::{shortest_path_len, Graph};
+use hashbrown::HashMap;
+use std::iter::once;
 
 pub fn part_one(input: &str) -> Option<u32> {
     Basin::parse(input, false).shortest_path()
@@ -10,8 +11,8 @@ pub fn part_two(input: &str) -> Option<u32> {
     Basin::parse(input, true).shortest_path()
 }
 
-type Minutes = u32;
-type Coordinate = i16;
+type Minutes = u16;
+type Coordinate = i8;
 
 const DIRECTIONS: [(Coordinate, Coordinate); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
 
@@ -53,7 +54,10 @@ impl Blizzard {
             CardinalDirection::N => y = (y + h - mh) % h,
         };
 
-        Point { x: x as Coordinate, y: y as Coordinate }
+        Point {
+            x: x as Coordinate,
+            y: y as Coordinate,
+        }
     }
 }
 
@@ -63,7 +67,8 @@ struct Basin {
     end: Point,
     width: Coordinate,
     height: Coordinate,
-    blizzards: Vec<Blizzard>,
+    blizzards_by_row: HashMap<Coordinate, Vec<Blizzard>>,
+    blizzards_by_col: HashMap<Coordinate, Vec<Blizzard>>,
     go_back_to_start: bool,
 }
 
@@ -71,17 +76,32 @@ impl Basin {
     fn parse(s: &str, go_back_to_start: bool) -> Self {
         let lines: Vec<_> = s.lines().filter(|l| l.starts_with('#')).collect();
 
-        let mut blizzards = Vec::<Blizzard>::new();
+        let mut blizzards_by_row = HashMap::<Coordinate, Vec<Blizzard>>::new();
+        let mut blizzards_by_col = HashMap::<Coordinate, Vec<Blizzard>>::new();
 
         for (y, l) in lines.iter().skip(1).take(lines.len() - 2).enumerate() {
             let line = &l.as_bytes()[1..l.len() - 1];
 
             for (x, &c) in line.iter().enumerate() {
                 if c != b'.' {
-                    blizzards.push(Blizzard {
-                        pos: Point { x: x as Coordinate, y: y as Coordinate },
+                    let blizzard = Blizzard {
+                        pos: Point {
+                            x: x as Coordinate,
+                            y: y as Coordinate,
+                        },
                         dir: CardinalDirection::for_code(c as char),
-                    });
+                    };
+
+                    match blizzard.dir {
+                        CardinalDirection::N | CardinalDirection::S => blizzards_by_col
+                            .entry(blizzard.pos.x)
+                            .or_default()
+                            .push(blizzard),
+                        CardinalDirection::W | CardinalDirection::E => blizzards_by_row
+                            .entry(blizzard.pos.y)
+                            .or_default()
+                            .push(blizzard),
+                    }
                 }
             }
         }
@@ -90,10 +110,14 @@ impl Basin {
         let height = (lines.len() - 2) as Coordinate;
         Basin {
             start: Point { x: 0, y: -1 },
-            end: Point { x: width - 1, y: height },
+            end: Point {
+                x: width - 1,
+                y: height,
+            },
             width,
             height,
-            blizzards,
+            blizzards_by_row,
+            blizzards_by_col,
             go_back_to_start,
         }
     }
@@ -104,7 +128,23 @@ impl Basin {
         } else if p.x < 0 || p.y < 0 || p.x >= self.width || p.y >= self.height {
             false
         } else {
-            !self.blizzards.iter().any(|b| b.position(minutes, self.width, self.height) == p)
+            if let Some(blizzards) = self.blizzards_by_col.get(&p.x) {
+                if blizzards
+                    .iter()
+                    .any(|b| b.position(minutes, self.width, self.height) == p)
+                {
+                    return false;
+                }
+            }
+            if let Some(blizzards) = self.blizzards_by_row.get(&p.y) {
+                if blizzards
+                    .iter()
+                    .any(|b| b.position(minutes, self.width, self.height) == p)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
@@ -114,7 +154,7 @@ impl Basin {
             minutes: 0,
             state: TripState::Initial,
         };
-        shortest_path_len(self, start).map(|x|x.1)
+        shortest_path_len(self, start).map(|x| x.1)
     }
 }
 
@@ -122,7 +162,8 @@ impl Graph for Basin {
     type Node = SearchState;
 
     fn is_solution(&self, node: &Self::Node) -> bool {
-        node.pos == self.end && (!self.go_back_to_start || node.state == TripState::VisitedStartAfterEnd)
+        node.pos == self.end
+            && (!self.go_back_to_start || node.state == TripState::VisitedStartAfterEnd)
     }
 
     fn collect_neighbors(&self, node: &Self::Node, neighbors: &mut Vec<(Self::Node, u32)>) {
@@ -136,23 +177,35 @@ impl Graph for Basin {
             state: current_state,
         };
 
-        let move_states = DIRECTIONS.iter()
-            .map(move |(dx, dy)| {
-                use TripState::*;
+        let move_states = DIRECTIONS.iter().map(move |(dx, dy)| {
+            use TripState::*;
 
-                let pos = current_pos.towards(*dx, *dy);
-                SearchState {
-                    pos,
-                    minutes: current_minutes + 1,
-                    state: match current_state {
-                        Initial => if pos == self.end { VisitedEnd } else { Initial }
-                        VisitedEnd => if pos == self.start { VisitedStartAfterEnd } else { VisitedEnd }
-                        VisitedStartAfterEnd => VisitedStartAfterEnd
-                    },
-                }
-            });
+            let pos = current_pos.towards(*dx, *dy);
+            SearchState {
+                pos,
+                minutes: current_minutes + 1,
+                state: match current_state {
+                    Initial => {
+                        if pos == self.end {
+                            VisitedEnd
+                        } else {
+                            Initial
+                        }
+                    }
+                    VisitedEnd => {
+                        if pos == self.start {
+                            VisitedStartAfterEnd
+                        } else {
+                            VisitedEnd
+                        }
+                    }
+                    VisitedStartAfterEnd => VisitedStartAfterEnd,
+                },
+            }
+        });
 
-        let cs = move_states.chain(once(wait_state))
+        let cs = move_states
+            .chain(once(wait_state))
             .filter(|s| self.is_empty(s.pos, s.minutes))
             .map(|n| (n, 1));
 
@@ -187,7 +240,10 @@ mod tests {
     fn test_blizzard_position_right() {
         let w = 7;
         let h = 5;
-        let blizzard = Blizzard { pos: Point { x: 2, y: 4 }, dir: CardinalDirection::E };
+        let blizzard = Blizzard {
+            pos: Point { x: 2, y: 4 },
+            dir: CardinalDirection::E,
+        };
 
         assert_eq!(Point { x: 2, y: 4 }, blizzard.position(0, w, h));
         assert_eq!(Point { x: 3, y: 4 }, blizzard.position(1, w, h));
