@@ -5,7 +5,7 @@ use std::{
 };
 
 use anyhow::anyhow;
-use enum_iterator::Sequence;
+use enum_iterator::{all, Sequence};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct Point<T> {
@@ -79,6 +79,40 @@ impl<T> Point<T> {
     }
 }
 
+impl Add<CardinalDirection> for Point<i8> {
+    type Output = Self;
+
+    fn add(self, rhs: CardinalDirection) -> Self::Output {
+        let (dx, dy) = rhs.deltas();
+        Point {
+            x: self.x + dx as i8,
+            y: self.y + dy as i8,
+        }
+    }
+}
+
+impl Add<CompassDirection> for Point<i8> {
+    type Output = Self;
+
+    fn add(self, rhs: CompassDirection) -> Self::Output {
+        let (dx, dy) = rhs.deltas();
+        Point {
+            x: self.x + dx as i8,
+            y: self.y + dy as i8,
+        }
+    }
+}
+
+impl Point<i8> {
+    pub fn towards_compass_direction(&self, d: CompassDirection) -> Self {
+        let (dx, dy) = d.deltas();
+        Point {
+            x: self.x + dx as i8,
+            y: self.y + dy as i8,
+        }
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Sequence)]
 pub enum CompassDirection {
     N,
@@ -92,6 +126,10 @@ pub enum CompassDirection {
 }
 
 impl CompassDirection {
+    pub fn values() -> impl Iterator<Item = CompassDirection> {
+        all::<CompassDirection>()
+    }
+
     pub fn deltas(self) -> (i32, i32) {
         match self {
             CompassDirection::N => (0, -1),
