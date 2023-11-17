@@ -13,7 +13,7 @@ fn snafu_to_int(s: &str) -> i64 {
 }
 
 fn int_to_snafu(mut num: i64) -> String {
-    let mut str = String::new();
+    let mut str = String::with_capacity(16);
 
     for e in (0..22).rev() {
         let m = 5i64.pow(e);

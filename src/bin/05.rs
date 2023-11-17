@@ -85,7 +85,7 @@ impl FromStr for Stacks {
                 break;
             }
 
-            for i in 0..usize::max_value() {
+            for i in 0..usize::MAX {
                 let j = i * 4 + 1;
                 if j >= line.len() {
                     break;

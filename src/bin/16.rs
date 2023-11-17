@@ -60,7 +60,7 @@ impl ValveMap {
         }
 
         let keys = valve_map.keys().map(|k| k.0).max().unwrap() as usize + 1;
-        let mut distances = vec![u8::max_value(); keys * keys];
+        let mut distances = vec![u8::MAX; keys * keys];
 
         // Initial distances
         for valve in valve_map.values() {

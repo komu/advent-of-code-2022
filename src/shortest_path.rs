@@ -34,7 +34,7 @@ pub fn shortest_path_len<G>(g: &G, start: G::Node) -> Option<(G::Node, u32)>
         g.collect_neighbors(&current, &mut neighbors);
         for (neighbor, cost) in neighbors.drain(..) {
             let tentative_gscore = current_gscore + cost;
-            if tentative_gscore < g_score.get(&neighbor).copied().unwrap_or(u32::max_value()) {
+            if tentative_gscore < g_score.get(&neighbor).copied().unwrap_or(u32::MAX) {
                 g_score.insert(neighbor.clone(), tentative_gscore);
 
                 let neighbor_score = tentative_gscore + g.heuristic_distance(&neighbor);

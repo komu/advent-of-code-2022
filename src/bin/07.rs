@@ -54,7 +54,7 @@ pub fn part_two(input: &str) -> Option<u32> {
 
     let sufficient = needs - (total - used);
     let mut sums = vec![0];
-    let mut result = u32::max_value();
+    let mut result = u32::MAX;
 
     for line in lines {
         match line {

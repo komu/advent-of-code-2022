@@ -151,9 +151,9 @@ struct ScanDimensions {
 
 impl Scan {
     fn dimensions(&self) -> ScanDimensions {
-        let mut min_x = Coordinate::max_value();
-        let mut max_x = Coordinate::min_value();
-        let mut max_y = Coordinate::min_value();
+        let mut min_x = Coordinate::MAX;
+        let mut max_x = Coordinate::MIN;
+        let mut max_y = Coordinate::MIN;
 
         for p in self.paths.iter().flatten() {
             min_x = min_x.min(p.x);

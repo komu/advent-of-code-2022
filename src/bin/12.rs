@@ -71,7 +71,7 @@ impl HeightMap {
         I: Iterator<Item = Point>,
     {
         let mut open_set = PriorityQueue::new();
-        let mut g_score = vec![u16::max_value(); self.heights.len()];
+        let mut g_score = vec![u16::MAX; self.heights.len()];
 
         for start in start_points {
             open_set.push(start, Reverse(self.heuristic_distance(start)));
