@@ -184,20 +184,20 @@ impl Blueprint {
         if can_build_geode_robot {
             state.build_robot(Material::Geode, self);
             result = result.max(self.recurse(state, cache, best));
-        } else if can_build_obsidian_robot {
+        } else if can_build_obsidian_robot && state.obsidian_robots < 10 {
             let without_robot = state.clone();
 
             state.build_robot(Material::Obsidian, self);
             result = result.max(self.recurse(state, cache, best));
             result = result.max(self.recurse(without_robot, cache, best));
         } else {
-            if can_build_clay_robot {
+            if can_build_clay_robot && state.clay_robots < 15 {
                 let mut new_state = state.clone();
                 new_state.build_robot(Material::Clay, self);
                 result = result.max(self.recurse(new_state, cache, best));
             }
 
-            if can_build_ore_robot {
+            if can_build_ore_robot && state.ore_robots < 10 {
                 let mut new_state = state.clone();
                 new_state.build_robot(Material::Ore, self);
                 result = result.max(self.recurse(new_state, cache, best));
