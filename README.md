@@ -8,9 +8,8 @@ a total budget of 100 milliseconds.
 
 ## Results
 
-All rows with solutions over a millisecond are marked with 😔, those with over 50 ms are marked with 😔😔 and those
-with over 1 second with 😔😔😔.
-
+All rows with solutions over a millisecond are marked with 😔, those with over 50 ms are marked with 😔😔. The days
+exceeding 500 ms are marked with 😔😔😔.
 
 |                    Day                     | Solution               |   Part 1 |   Part 2 | Notes                                                                                                                        |
 |:------------------------------------------:|:-----------------------|---------:|---------:|:-----------------------------------------------------------------------------------------------------------------------------|
@@ -32,16 +31,18 @@ with over 1 second with 😔😔😔.
 | [16](https://adventofcode.com/2022/day/16) | [16.rs](src/bin/16.rs) |   9.92ms |   6.53ms | 😔                                                                                                                           |
 | [17](https://adventofcode.com/2022/day/17) | [17.rs](src/bin/17.rs) | 221.94µs | 326.42µs | Keep previous states in cache to find the period of the process                                                              |
 | [18](https://adventofcode.com/2022/day/18) | [18.rs](src/bin/18.rs) | 160.66µs | 437.68µs | Represent the set of points as a bit-set                                                                                     |
-| [19](https://adventofcode.com/2022/day/19) | [19.rs](src/bin/19.rs) | 591.35ms |    1.11s | 😔😔😔 Heuristics to direct the search, memoization, pruning against best result seen so far                                 |
+| [19](https://adventofcode.com/2022/day/19) | [19.rs](src/bin/19.rs) | 582.48ms |    1.06s | 😔😔😔 Heuristics to direct the search, memoization, pruning against best result seen so far                                 |
 | [20](https://adventofcode.com/2022/day/20) | [20.rs](src/bin/20.rs) |   5.08ms |  53.33ms | 😔😔                                                                                                                         |
 | [21](https://adventofcode.com/2022/day/21) | [21.rs](src/bin/21.rs) | 325.30µs | 235.40µs | -                                                                                                                            |
 | [22](https://adventofcode.com/2022/day/22) | [22.rs](src/bin/22.rs) | 139.31µs | 127.73µs | -                                                                                                                            |
 | [23](https://adventofcode.com/2022/day/23) | [23.rs](src/bin/23.rs) | 916.03µs |  87.09ms | 😔😔 Keep three different data structures to make everything inside the loop O(1). Use suitable bit-representation for data. |
-| [24](https://adventofcode.com/2022/day/24) | [24.rs](src/bin/24.rs) |  80.10ms |    1.16s | 😔😔😔                                                                                                                       |
+| [24](https://adventofcode.com/2022/day/24) | [24.rs](src/bin/24.rs) |  14.71ms |  26.31ms | 😔Search using A* with a smart heuristic. Represent each state in 32 bits. Use Vector instead of Map for g-scores.           |
 | [25](https://adventofcode.com/2022/day/25) | [25.rs](src/bin/25.rs) |  17.04µs |        - | -                                                                                                                            |
 
-In the end, days 15, 19 and 24 blew the 100 ms budget by themselves while days 20 and 23 were over 50 ms.
-Ignoring those outliers, the total time for the rest of the 20 days is 28 ms, which is pretty decent.
+In the end, days 15 and 19 blew the 100 ms budget by themselves while days 20 and 23 were over 50 ms.
+Ignoring those outliers, the total time for the rest of the 21 days is 69 ms, which is pretty decent, especially
+considering that only day 19 exceeded total runtime of one second and even that is under two seconds. That said,
+the total runtime for all days is 1.98 seconds, which almost 20 times more than the budgeted 100 ms.
 
 ## Previous years
 
